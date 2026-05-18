@@ -25,44 +25,14 @@ const storage = firebase.storage();
 let currentUser = null;
 let experiences = [];
 
-// ─── AUTH ───────────────────────────────────────────────────────
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    currentUser = user;
-    showApp();
-    loadExperiences();
-  } else {
-    currentUser = null;
-    showLogin();
-  }
-});
-
-window.handleLogin = async function() {
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
-  const errorEl = document.getElementById("login-error");
-
-  try {
-    errorEl.textContent = "";
-    await auth.signInWithEmailAndPassword(email, password);
-  } catch (err) {
-    errorEl.textContent = err.message.replace("Firebase: ", "");
-  }
-};
-
-window.handleLogout = function() {
-  auth.signOut();
-};
-
-function showLogin() {
-  document.getElementById("login-screen").classList.add("active");
-  document.getElementById("app-screen").classList.remove("active");
-}
-
-function showApp() {
+// ─── AUTH (disabled — no login required) ────────────────────────
+// Skip login, go straight to dashboard
+function init() {
   document.getElementById("login-screen").classList.remove("active");
   document.getElementById("app-screen").classList.add("active");
+  loadExperiences();
 }
+init();
 
 // ─── NAVIGATION ─────────────────────────────────────────────────
 window.switchView = function(viewName) {
@@ -193,7 +163,7 @@ window.handleCreate = async function(event) {
     siteId,
     status: "draft",
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    createdBy: currentUser.email,
+    createdBy: "admin",
   };
 
   // Add type-specific fields
@@ -272,9 +242,4 @@ window.deleteExperience = async function(id) {
   }
 };
 
-// ─── KEYBOARD SHORTCUTS ─────────────────────────────────────────
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && document.getElementById("login-screen").classList.contains("active")) {
-    handleLogin();
-  }
-});
+
