@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-WEB — Control Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+  <!-- ============================================================
+       X-WEB CONTROL PANEL
+       Admin dashboard for managing AR experiences
+       ============================================================ -->
+
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen active">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="brand-x">X-WEB</span>
+        <span class="brand-sub">CONTROL PANEL</span>
+      </div>
+      <div class="login-divider"></div>
+      <div class="login-form">
+        <input type="email" id="login-email" placeholder="Email" autocomplete="email">
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+        <button id="login-btn" onclick="handleLogin()">SIGN IN</button>
+        <p id="login-error" class="error-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app-screen" class="screen">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-x">X-WEB</span>
+        <span class="brand-sub">.IO</span>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/></svg>
+          <span>Dashboard</span>
+        </li>
+        <li class="nav-item" data-view="experiences" onclick="switchView('experiences')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
+          <span>Experiences</span>
+        </li>
+        <li class="nav-item" data-view="create" onclick="switchView('create')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span>Create New</span>
+        </li>
+        <li class="nav-item" data-view="sites" onclick="switchView('sites')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
+          <span>Sites</span>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <div id="view-dashboard" class="view active">
+        <div class="view-header">
+          <h1>Dashboard</h1>
+          <p class="view-subtitle">X-WEB AR Platform Overview</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Experiences</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-image">0</div>
+            <div class="stat-label">Image Target</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-world">0</div>
+            <div class="stat-label">World GPS</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-comms">0</div>
+            <div class="stat-label">Comms</div>
+          </div>
+        </div>
+        <div class="recent-section">
+          <h2>Recent Experiences</h2>
+          <div id="recent-list" class="experience-list">
+            <p class="empty-state">No experiences yet. Create your first one.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experiences View -->
+      <div id="view-experiences" class="view">
+        <div class="view-header">
+          <h1>All Experiences</h1>
+          <button class="btn-primary" onclick="switchView('create')">+ New Experience</button>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all" onclick="filterExperiences('all')">All</button>
+          <button class="filter-btn" data-filter="image-target" onclick="filterExperiences('image-target')">Image Target</button>
+          <button class="filter-btn" data-filter="world-target" onclick="filterExperiences('world-target')">World GPS</button>
+          <button class="filter-btn" data-filter="comms-ar" onclick="filterExperiences('comms-ar')">Comms</button>
+        </div>
+        <div id="experiences-list" class="experience-list">
+          <p class="empty-state">No experiences found.</p>
+        </div>
+      </div>
+
+      <!-- Create New View -->
+      <div id="view-create" class="view">
+        <div class="view-header">
+          <h1>Create Experience</h1>
+          <p class="view-subtitle">Set up a new AR experience</p>
+        </div>
+        <form id="create-form" class="create-form" onsubmit="handleCreate(event)">
+          <!-- Step 1: Type -->
+          <div class="form-section">
+            <h3>1. Experience Type</h3>
+            <div class="type-selector">
+              <label class="type-card selected" data-type="image-target">
+                <input type="radio" name="type" value="image-target" checked>
+                <div class="type-icon">
+                  <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
+                </div>
+                <span class="type-name">Image Target</span>
+                <span class="type-desc">Scan image → video/audio</span>
+              </label>
+              <label class="type-card" data-type="world-target">
+                <input type="radio" name="type" value="world-target">
+                <div class="type-icon">
+                  <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                </div>
+                <span class="type-name">World GPS</span>
+                <span class="type-desc">Location → 3D model</span>
+              </label>
+              <label class="type-card" data-type="comms-ar">
+                <input type="radio" name="type" value="comms-ar">
+                <div class="type-icon">
+                  <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+                </div>
+                <span class="type-name">Comms</span>
+                <span class="type-desc">Scan → VoIP call</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Step 2: Details -->
+          <div class="form-section">
+            <h3>2. Details</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>App Name</label>
+                <input type="text" id="field-name" placeholder="e.g., Sunshine Coast Golf" required>
+              </div>
+              <div class="form-field">
+                <label>Channel / Client</label>
+                <input type="text" id="field-channel" placeholder="e.g., Golf Club">
+              </div>
+              <div class="form-field">
+                <label>Site ID (for URL)</label>
+                <input type="text" id="field-site-id" placeholder="e.g., sunshine-golf" pattern="[a-z0-9-]+" title="Lowercase letters, numbers, and hyphens only">
+                <span class="field-hint">Will become: <strong id="url-preview">___</strong>.web.app</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Image Target Config -->
+          <div class="form-section" id="section-image-target">
+            <h3>3. Image Target</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Target Image</label>
+                <input type="file" id="field-target-image" accept="image/*">
+                <span class="field-hint">Upload the image that will be scanned (JPG/PNG)</span>
+              </div>
+              <div class="form-field">
+                <label>Content Video/Audio</label>
+                <input type="file" id="field-content-media" accept="video/*,audio/*">
+                <span class="field-hint">The media that plays when the target is detected</span>
+              </div>
+              <div class="form-field full-width">
+                <label>Target Data JSON (optional — can be generated later)</label>
+                <textarea id="field-target-data" rows="4" placeholder="Paste image target JSON here, or leave blank to generate later"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: World Target Config -->
+          <div class="form-section hidden" id="section-world-target">
+            <h3>3. GPS Location</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Latitude</label>
+                <input type="number" id="field-lat" step="any" placeholder="e.g., -26.6534">
+              </div>
+              <div class="form-field">
+                <label>Longitude</label>
+                <input type="number" id="field-lng" step="any" placeholder="e.g., 153.0667">
+              </div>
+              <div class="form-field">
+                <label>Trigger Radius (meters)</label>
+                <input type="number" id="field-radius" value="50" min="10" max="1000">
+              </div>
+              <div class="form-field">
+                <label>3D Model (.glb)</label>
+                <input type="file" id="field-model" accept=".glb,.gltf">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Comms Config -->
+          <div class="form-section hidden" id="section-comms-ar">
+            <h3>3. VoIP Configuration</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Destination Phone Number</label>
+                <input type="tel" id="field-phone" placeholder="+1234567890">
+              </div>
+              <div class="form-field">
+                <label>Call Label</label>
+                <input type="text" id="field-call-label" placeholder="e.g., CONNECTING TO CONCIERGE">
+              </div>
+              <div class="form-field">
+                <label>Trigger Image</label>
+                <input type="file" id="field-comms-image" accept="image/*">
+              </div>
+              <div class="form-field">
+                <label>Access Password</label>
+                <input type="text" id="field-password" value="gerald">
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="form-actions">
+            <button type="submit" class="btn-primary btn-large">Create Experience</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sites View -->
+      <div id="view-sites" class="view">
+        <div class="view-header">
+          <h1>Hosting Sites</h1>
+          <p class="view-subtitle">All Firebase Hosting sites in this project</p>
+        </div>
+        <div id="sites-list" class="sites-grid">
+          <div class="site-card">
+            <div class="site-name">xweb-image-target-demo</div>
+            <a class="site-url" href="https://xweb-image-target-demo.web.app" target="_blank">xweb-image-target-demo.web.app</a>
+            <span class="site-type">Image Target</span>
+          </div>
+          <div class="site-card">
+            <div class="site-name">xweb-world-target-demo</div>
+            <a class="site-url" href="https://xweb-world-target-demo.web.app" target="_blank">xweb-world-target-demo.web.app</a>
+            <span class="site-type">World GPS</span>
+          </div>
+          <div class="site-card">
+            <div class="site-name">xweb-comms-demo</div>
+            <a class="site-url" href="https://xweb-comms-demo.web.app" target="_blank">xweb-comms-demo.web.app</a>
+            <span class="site-type">Comms</span>
+          </div>
+          <div class="site-card">
+            <div class="site-name">rockcam</div>
+            <a class="site-url" href="https://rockcam.web.app" target="_blank">rockcam.web.app</a>
+            <span class="site-type">Image Target (Legacy)</span>
+          </div>
+          <div class="site-card">
+            <div class="site-name">quiksar</div>
+            <a class="site-url" href="https://quiksar.web.app" target="_blank">quiksar.web.app</a>
+            <span class="site-type">Legacy</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,6 +1,22 @@
 {
   "hosting": [
     {
+      "site": "x-web-ar-platform",
+      "public": "admin",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=3600" }
+          ]
+        }
+      ]
+    },
+    {
       "site": "xweb-image-target-demo",
       "public": "templates/image-target/dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -61,6 +77,9 @@
       ]
     }
   ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "storage": {
     "rules": "storage.rules"
   }
