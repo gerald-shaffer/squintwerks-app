@@ -1,0 +1,133 @@
+/* Image Target Template — App Styles */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.screen.active {
+  display: flex;
+}
+
+/* Launch Screen */
+#launch-screen {
+  align-items: center;
+  justify-content: center;
+}
+.launch-content {
+  text-align: center;
+  padding: 0 24px;
+  z-index: 10;
+}
+.launch-content h1 {
+  font-size: clamp(32px, 8vw, 48px);
+  line-height: 1;
+}
+.launch-content .instructions {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--xweb-muted);
+  line-height: 1.6;
+  max-width: 280px;
+  margin: 0 auto 32px;
+}
+.launch-content .divider {
+  width: 64px;
+  height: 1px;
+  background: var(--xweb-gold-dim);
+  margin: 24px auto;
+}
+.exhibit-count {
+  margin-top: 32px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--xweb-muted-dim);
+  letter-spacing: 0.1em;
+}
+
+/* Camera Screen */
+#camera-screen {
+  background: var(--xweb-black);
+}
+#ar-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+#ar-container a-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* AR Overlay */
+.ar-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.ar-overlay .xweb-header,
+.ar-overlay .xweb-footer,
+.ar-overlay .back-btn,
+.ar-overlay .tap-overlay button {
+  pointer-events: auto;
+}
+
+/* Back button */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--xweb-gold);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Viewfinder */
+#viewfinder {
+  transition: opacity 0.3s ease;
+}
+#viewfinder.hidden {
+  opacity: 0;
+}
+
+/* Tap to play overlay */
+.tap-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+.tap-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Scan line background effect on launch */
+#launch-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--xweb-gold) 2px,
+    var(--xweb-gold) 3px
+  );
+}

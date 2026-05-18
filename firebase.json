@@ -1,0 +1,67 @@
+{
+  "hosting": [
+    {
+      "site": "xweb-image-target-demo",
+      "public": "templates/image-target/dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "Permissions-Policy", "value": "camera=(self)" }
+          ]
+        },
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          ]
+        },
+        {
+          "source": "**/*.@(mp4|webm|mp3|ogg)",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=31536000" }
+          ]
+        }
+      ]
+    },
+    {
+      "site": "xweb-world-target-demo",
+      "public": "templates/world-target/dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "Permissions-Policy", "value": "camera=(self), geolocation=(self)" }
+          ]
+        }
+      ]
+    },
+    {
+      "site": "xweb-comms-demo",
+      "public": "templates/comms-ar/dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "Permissions-Policy", "value": "camera=(self), microphone=(self)" }
+          ]
+        }
+      ]
+    }
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

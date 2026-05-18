@@ -1,0 +1,142 @@
+/* World Target Template — App Styles */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.screen.active {
+  display: flex;
+}
+
+/* Launch Screen */
+#launch-screen,
+#approaching-screen {
+  align-items: center;
+  justify-content: center;
+}
+.launch-content {
+  text-align: center;
+  padding: 0 24px;
+  z-index: 10;
+}
+.launch-content h1 {
+  font-size: clamp(32px, 8vw, 48px);
+  line-height: 1;
+}
+.launch-content .instructions {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--xweb-muted);
+  line-height: 1.6;
+  max-width: 280px;
+  margin: 0 auto 32px;
+}
+.launch-content .divider {
+  width: 64px;
+  height: 1px;
+  background: var(--xweb-gold-dim);
+  margin: 24px auto;
+}
+.location-info {
+  margin-top: 24px;
+}
+
+/* Compass ring */
+.compass-ring {
+  width: 120px;
+  height: 120px;
+  border: 1px solid var(--xweb-gold-dim);
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.compass-arrow {
+  width: 2px;
+  height: 40px;
+  background: var(--xweb-gold);
+  transform-origin: bottom center;
+  transition: transform 0.3s ease;
+}
+
+/* Camera Screen */
+#camera-screen {
+  background: var(--xweb-black);
+}
+#ar-viewport {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+#ar-viewport canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* AR Overlay */
+.ar-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.ar-overlay .xweb-header,
+.ar-overlay .xweb-footer,
+.ar-overlay .back-btn {
+  pointer-events: auto;
+}
+
+/* Back button */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--xweb-gold);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Title bar */
+.title-bar {
+  padding: 12px 0;
+  border-top: 1px solid var(--xweb-gold-faint);
+}
+
+/* Vignette effect */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
+}
+
+/* Ground grid effect */
+#ar-viewport {
+  position: relative;
+}
+
+/* Scan line background effect */
+#launch-screen::before,
+#approaching-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--xweb-gold) 2px,
+    var(--xweb-gold) 3px
+  );
+}

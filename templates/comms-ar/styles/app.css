@@ -1,0 +1,151 @@
+/* Comms AR Template — App Styles */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.screen.active {
+  display: flex;
+}
+
+/* Launch / Password Screen */
+#launch-screen,
+#password-screen {
+  align-items: center;
+  justify-content: center;
+}
+.launch-content {
+  text-align: center;
+  padding: 0 24px;
+  z-index: 10;
+}
+.launch-content h1 {
+  font-size: clamp(28px, 7vw, 40px);
+  line-height: 1;
+}
+.launch-content .instructions {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--xweb-muted);
+  line-height: 1.6;
+  max-width: 280px;
+  margin: 0 auto 32px;
+}
+.launch-content .divider {
+  width: 64px;
+  height: 1px;
+  background: var(--xweb-gold-dim);
+  margin: 24px auto;
+}
+
+/* Password form */
+.password-form {
+  margin-top: 24px;
+}
+.xweb-input {
+  display: block;
+  width: 200px;
+  margin: 0 auto 16px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid var(--xweb-gold-dim);
+  color: var(--xweb-white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0.1em;
+  outline: none;
+}
+.xweb-input:focus {
+  border-color: var(--xweb-gold);
+}
+
+/* Camera Screen */
+#camera-screen {
+  background: var(--xweb-black);
+}
+#ar-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+#ar-container a-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* AR Overlay */
+.ar-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.ar-overlay .xweb-header,
+.ar-overlay .xweb-footer,
+.ar-overlay .back-btn,
+.ar-overlay .call-panel {
+  pointer-events: auto;
+}
+
+/* Back button */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--xweb-gold);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Call panel */
+.call-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+.call-panel.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.call-card {
+  text-align: center;
+  padding: 32px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--xweb-gold-dim);
+  border-radius: 4px;
+}
+.call-icon {
+  color: var(--xweb-gold);
+  animation: signal-pulse 2s ease-in-out infinite;
+}
+
+/* Scan line background */
+#password-screen::before,
+#launch-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--xweb-gold) 2px,
+    var(--xweb-gold) 3px
+  );
+}

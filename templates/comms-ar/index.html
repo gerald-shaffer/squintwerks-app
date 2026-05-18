@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>X-WEB Comms</title>
+
+  <!-- X-WEB Design System -->
+  <link rel="stylesheet" href="styles/xweb-theme.css">
+  <link rel="stylesheet" href="styles/app.css">
+
+  <!-- A-Frame + 8th Wall Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
+
+  <!-- Twilio Client SDK -->
+  <script src="https://sdk.twilio.com/js/client/releases/1.14/twilio.min.js"></script>
+</head>
+<body>
+  <!-- ============================================================
+       X-WEB COMMS AR TEMPLATE (Image Target → VoIP Call)
+       
+       PASSWORD PROTECTED — Proof of concept.
+       
+       CONFIGURATION:
+       Edit config.js to set:
+       - Password for access
+       - Image target data
+       - Twilio token endpoint
+       - Destination phone number or SIP address
+       ============================================================ -->
+
+  <!-- Password Gate -->
+  <div id="password-screen" class="screen active">
+    <header class="xweb-header">
+      <div class="brand">
+        <span class="xweb-display xweb-gold" style="font-size:12px; letter-spacing:0.2em;">X-WEB</span>
+        <span class="xweb-gold-dim" style="font-size:10px;">COMMS</span>
+      </div>
+    </header>
+
+    <main class="launch-content">
+      <div class="divider"></div>
+      <h1 class="xweb-display" style="font-size:24px;">ACCESS REQUIRED</h1>
+      <p style="font-family:var(--font-body); font-size:12px; color:var(--xweb-muted); margin-top:12px;">This is a protected prototype.</p>
+      <div class="divider"></div>
+
+      <div class="password-form">
+        <input type="password" id="password-input" placeholder="Enter password" class="xweb-input" autocomplete="off">
+        <button class="xweb-btn" onclick="checkPassword()">ENTER</button>
+        <p id="password-error" style="font-family:var(--font-body); font-size:11px; color:#EF4444; margin-top:12px; display:none;">Incorrect password</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Launch Screen -->
+  <div id="launch-screen" class="screen">
+    <header class="xweb-header">
+      <div class="brand">
+        <span class="xweb-display xweb-gold" style="font-size:12px; letter-spacing:0.2em;">X-WEB</span>
+        <span class="xweb-gold-dim" style="font-size:10px;">COMMS</span>
+      </div>
+      <div class="status">
+        <span class="xweb-status-dot online"></span>
+        <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-muted); letter-spacing:0.1em; text-transform:uppercase; margin-left:6px;">Ready</span>
+      </div>
+    </header>
+
+    <main class="launch-content">
+      <div class="divider"></div>
+      <h1 id="app-title" class="xweb-display">COMMS</h1>
+      <p id="channel-name" class="xweb-display xweb-gold" style="font-size:14px; letter-spacing:0.3em; margin-top:8px;">DIRECT LINE</p>
+      <div class="divider"></div>
+
+      <p class="instructions">Point your camera at the trigger image to initiate a direct voice connection.</p>
+
+      <button id="launch-btn" class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>
+    </main>
+  </div>
+
+  <!-- Camera / AR Screen -->
+  <div id="camera-screen" class="screen">
+    <div id="ar-container"></div>
+
+    <!-- UI Overlay -->
+    <div class="ar-overlay">
+      <header class="xweb-header">
+        <button class="back-btn" onclick="exitCamera()">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <span>EXIT</span>
+        </button>
+        <span class="xweb-display xweb-gold" style="font-size:10px; letter-spacing:0.15em;">X-WEB COMMS</span>
+        <div class="status" id="ar-status">
+          <span class="xweb-status-dot scanning"></span>
+          <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-gold-dim); letter-spacing:0.1em; text-transform:uppercase; margin-left:6px;">Scanning</span>
+        </div>
+      </header>
+
+      <!-- Viewfinder -->
+      <div id="viewfinder">
+        <div class="xweb-viewfinder-corner top-left"></div>
+        <div class="xweb-viewfinder-corner top-right"></div>
+        <div class="xweb-viewfinder-corner bottom-left"></div>
+        <div class="xweb-viewfinder-corner bottom-right"></div>
+      </div>
+
+      <!-- Call UI (shown when target detected) -->
+      <div id="call-ui" class="call-panel hidden">
+        <div class="call-card">
+          <div class="call-icon">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
+            </svg>
+          </div>
+          <p id="call-label" class="xweb-display" style="font-size:14px; color:var(--xweb-white); margin-top:12px;">CONNECTING...</p>
+          <p id="call-status" style="font-family:var(--font-body); font-size:11px; color:var(--xweb-muted); margin-top:4px;">Target detected</p>
+          <button id="call-btn" class="xweb-btn" style="margin-top:20px;" onclick="initiateCall()">TAP TO CALL</button>
+          <button id="hangup-btn" class="xweb-btn" style="margin-top:12px; border-color:#EF4444; color:#EF4444; display:none;" onclick="hangupCall()">END CALL</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="xweb-footer">
+        <div style="text-align:center;">
+          <p id="scan-hint" style="font-family:var(--font-body); font-size:11px; color:var(--xweb-muted-dim);">Point camera at trigger image</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App configuration and logic -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

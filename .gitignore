@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.firebase/
+service-account.json
+*.log
+.env
+.env.local

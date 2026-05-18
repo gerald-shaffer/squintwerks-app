@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>X-WEB World Experience</title>
+
+  <!-- X-WEB Design System -->
+  <link rel="stylesheet" href="styles/xweb-theme.css">
+  <link rel="stylesheet" href="styles/app.css">
+
+  <!-- Three.js for 3D model rendering -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- ============================================================
+       X-WEB WORLD TARGET TEMPLATE (GPS → 3D Model)
+       
+       CONFIGURATION:
+       Edit config.js to set:
+       - App name, channel name, branding
+       - GPS coordinates (lat/lng) and trigger radius
+       - 3D model URL (.glb file)
+       - Model scale and rotation
+       ============================================================ -->
+
+  <!-- Launch Screen -->
+  <div id="launch-screen" class="screen active">
+    <header class="xweb-header">
+      <div class="brand">
+        <span class="xweb-display xweb-gold" style="font-size:12px; letter-spacing:0.2em;">X-WEB</span>
+        <span class="xweb-gold-dim" style="font-size:10px;">.IO</span>
+      </div>
+      <div class="status">
+        <span class="xweb-status-dot online"></span>
+        <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-muted); letter-spacing:0.1em; text-transform:uppercase; margin-left:6px;">Network Online</span>
+      </div>
+    </header>
+
+    <main class="launch-content">
+      <div class="divider"></div>
+      <h1 id="app-title" class="xweb-display">WORLD AR</h1>
+      <p id="channel-name" class="xweb-display xweb-gold" style="font-size:14px; letter-spacing:0.3em; margin-top:8px;">CHANNEL NAME</p>
+      <div class="divider"></div>
+
+      <p class="instructions" id="instructions-text">
+        This experience is anchored to a real-world location. Get within range to unlock it.
+      </p>
+
+      <button id="launch-btn" class="xweb-btn" onclick="startGPS()">LOCATE ME</button>
+
+      <div class="location-info" id="location-info" style="display:none;">
+        <p id="distance-text" class="xweb-display" style="font-size:14px; color:var(--xweb-gold);">Calculating...</p>
+      </div>
+    </main>
+
+    <footer class="xweb-footer" style="position:absolute;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-muted-dim); letter-spacing:0.1em; text-transform:uppercase;">Powered by X-WEB.IO</span>
+        <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-muted-dim); letter-spacing:0.1em; text-transform:uppercase;">Shaffer Media Group</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Approaching Screen -->
+  <div id="approaching-screen" class="screen">
+    <header class="xweb-header">
+      <div class="brand">
+        <span class="xweb-display xweb-gold" style="font-size:12px; letter-spacing:0.2em;">X-WEB</span>
+      </div>
+      <div class="status">
+        <span class="xweb-status-dot scanning"></span>
+        <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-gold-dim); letter-spacing:0.1em; text-transform:uppercase; margin-left:6px;">Approaching</span>
+      </div>
+    </header>
+
+    <main class="launch-content">
+      <div class="compass-ring">
+        <div class="compass-arrow" id="compass-arrow"></div>
+      </div>
+      <p id="approach-distance" class="xweb-display" style="font-size:24px; color:var(--xweb-gold); margin-top:24px;">-- m away</p>
+      <p style="font-family:var(--font-body); font-size:12px; color:var(--xweb-muted); margin-top:8px;">Walk toward the experience</p>
+
+      <!-- Bypass button for testing -->
+      <button id="bypass-btn" class="xweb-btn" style="margin-top:32px;" onclick="launchCamera()">LAUNCH CAMERA</button>
+    </main>
+  </div>
+
+  <!-- Camera / 3D AR Screen -->
+  <div id="camera-screen" class="screen">
+    <div id="ar-viewport"></div>
+    <video id="camera-feed" autoplay playsinline style="display:none;"></video>
+
+    <!-- UI Overlay -->
+    <div class="ar-overlay">
+      <header class="xweb-header">
+        <button class="back-btn" onclick="exitCamera()">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <span>EXIT</span>
+        </button>
+        <span class="xweb-display xweb-gold" style="font-size:10px; letter-spacing:0.15em;">X-WEB</span>
+        <div class="status">
+          <span class="xweb-status-dot live"></span>
+          <span style="font-family:var(--font-display); font-size:9px; color:var(--xweb-red-live); letter-spacing:0.1em; text-transform:uppercase; margin-left:6px;">Live</span>
+        </div>
+      </header>
+
+      <!-- Title bar at bottom -->
+      <div class="xweb-footer">
+        <div class="title-bar">
+          <p id="model-title" class="xweb-display" style="font-size:16px; color:var(--xweb-white); letter-spacing:0.1em;"></p>
+          <p id="model-location" style="font-family:var(--font-body); font-size:11px; color:var(--xweb-muted-dim); margin-top:4px;"></p>
+        </div>
+      </div>
+
+      <!-- Vignette -->
+      <div class="vignette"></div>
+    </div>
+  </div>
+
+  <!-- App configuration and logic -->
+  <script src="config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

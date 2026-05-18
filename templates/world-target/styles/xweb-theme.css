@@ -1,0 +1,142 @@
+/**
+ * X-WEB Design System — Broadcast Terminal Aesthetic
+ * Colors: True black + X-WEB gold
+ * Typography: Oswald (display) + Inter (body)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --xweb-black: #000000;
+  --xweb-gold: #C9A84C;
+  --xweb-gold-dim: rgba(201, 168, 76, 0.6);
+  --xweb-gold-faint: rgba(201, 168, 76, 0.2);
+  --xweb-white: #F5F5F5;
+  --xweb-muted: rgba(245, 245, 245, 0.5);
+  --xweb-muted-dim: rgba(245, 245, 245, 0.3);
+  --xweb-red-live: #EF4444;
+  --xweb-green-online: #22C55E;
+
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--xweb-black);
+  color: var(--xweb-white);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display headings */
+.xweb-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Gold accent text */
+.xweb-gold { color: var(--xweb-gold); }
+.xweb-gold-dim { color: var(--xweb-gold-dim); }
+
+/* Signal pulse animation */
+@keyframes signal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.animate-signal-pulse {
+  animation: signal-pulse 2s ease-in-out infinite;
+}
+
+/* Scan line effect */
+@keyframes scan-line {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100vh); }
+}
+.animate-scan-line {
+  animation: scan-line 8s linear infinite;
+}
+
+/* Button base */
+.xweb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  border: 1px solid var(--xweb-gold);
+  color: var(--xweb-gold);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.xweb-btn:hover {
+  background: var(--xweb-gold);
+  color: var(--xweb-black);
+}
+.xweb-btn:active {
+  transform: scale(0.95);
+}
+
+/* Network status indicator */
+.xweb-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: signal-pulse 2s ease-in-out infinite;
+}
+.xweb-status-dot.online { background: var(--xweb-green-online); }
+.xweb-status-dot.scanning { background: var(--xweb-gold); }
+.xweb-status-dot.live { background: var(--xweb-red-live); }
+
+/* Header bar */
+.xweb-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+}
+
+/* Footer bar */
+.xweb-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+/* Viewfinder corners */
+.xweb-viewfinder-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--xweb-gold-dim);
+}
+.xweb-viewfinder-corner.top-left { top: 60px; left: 16px; border-top: 1px solid; border-left: 1px solid; }
+.xweb-viewfinder-corner.top-right { top: 60px; right: 16px; border-top: 1px solid; border-right: 1px solid; }
+.xweb-viewfinder-corner.bottom-left { bottom: 80px; left: 16px; border-bottom: 1px solid; border-left: 1px solid; }
+.xweb-viewfinder-corner.bottom-right { bottom: 80px; right: 16px; border-bottom: 1px solid; border-right: 1px solid; }
