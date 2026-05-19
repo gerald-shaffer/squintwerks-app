@@ -6,7 +6,7 @@
   <title>X-WEB — Create Experience</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
   <style>
@@ -509,7 +509,7 @@
           <xrextras-named-image-target name="\${TARGET_NAME}">
             <a-entity
               xrextras-play-video="video: #target-video; thumb: #target-video; canstop: true"
-              geometry="primitive: plane; height: 1; width: 0.75;"
+              geometry="primitive: plane; width: 1; height: 0.5625;"
             ></a-entity>
           </xrextras-named-image-target>
         </a-scene>
@@ -593,28 +593,22 @@
       resultUrl.href = url;
       resultUrl.textContent = name + ' — AR Experience (tap to open)';
 
-      // Generate QR code
+      // Generate QR code using qrcode-generator library
       const qrContainer = document.getElementById('qr-container');
       qrContainer.innerHTML = '';
       
       try {
-        const qrCanvas = document.createElement('canvas');
-        QRCode.toCanvas(qrCanvas, url, {
-          width: 256,
-          margin: 2,
-          errorCorrectionLevel: 'L',
-          color: { dark: '#000000', light: '#ffffff' }
-        }, function(err) {
-          if (err) {
-            console.error('QR error:', err);
-            qrContainer.innerHTML = '<p style="color:#C9A84C;font-size:11px;padding:20px;word-break:break-all;">' + url + '</p>';
-          } else {
-            qrCanvas.style.display = 'block';
-            qrCanvas.style.width = '200px';
-            qrCanvas.style.height = '200px';
-            qrContainer.appendChild(qrCanvas);
-          }
-        });
+        const qr = qrcode(0, 'L');
+        qr.addData(url);
+        qr.make();
+        const svg = qr.createSvgTag({ cellSize: 4, margin: 4 });
+        qrContainer.innerHTML = svg;
+        const svgEl = qrContainer.querySelector('svg');
+        if (svgEl) {
+          svgEl.style.width = '200px';
+          svgEl.style.height = '200px';
+          svgEl.style.display = 'block';
+        }
       } catch(e) {
         console.error('QR exception:', e);
         qrContainer.innerHTML = '<p style="color:#C9A84C;font-size:11px;padding:20px;word-break:break-all;">' + url + '</p>';
