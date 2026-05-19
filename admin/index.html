@@ -591,13 +591,18 @@
 
       const resultUrl = document.getElementById('result-url');
       resultUrl.href = url;
-      resultUrl.textContent = url.length > 80 ? name + ' — AR Experience' : url;
+      resultUrl.textContent = name + ' — AR Experience (tap to open)';
 
       // Generate QR code
       const qrContainer = document.getElementById('qr-container');
       qrContainer.innerHTML = '';
-      QRCode.toCanvas(url, { width: 200, margin: 1, color: { dark: '#000', light: '#fff' } }, (err, canvas) => {
-        if (!err) qrContainer.appendChild(canvas);
+      const qrCanvas = document.createElement('canvas');
+      qrContainer.appendChild(qrCanvas);
+      QRCode.toCanvas(qrCanvas, url, { width: 200, margin: 2, color: { dark: '#000000', light: '#ffffff' } }, function(err) {
+        if (err) {
+          console.error('QR error:', err);
+          qrContainer.innerHTML = '<p style="color:red;font-size:12px;">QR generation failed</p>';
+        }
       });
     }
 
