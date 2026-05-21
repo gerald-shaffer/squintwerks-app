@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-WEB — Create Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <style>
+    :root {
+      --black: #000; --surface: #111; --surface-2: #1A1A1A;
+      --border: #2A2A2A; --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.4);
+      --gold-bg: rgba(201,168,76,0.08); --white: #F5F5F5; --muted: #999;
+      --green: #22C55E; --red: #EF4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--black); color:var(--white); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:40px 20px; }
+    
+    .brand { text-align:center; margin-bottom:40px; }
+    .brand h1 { font-family:'Oswald',sans-serif; font-size:36px; color:var(--gold); letter-spacing:0.15em; }
+    .brand p { font-size:12px; color:var(--muted); letter-spacing:0.2em; margin-top:4px; }
+
+    .panel { width:100%; max-width:600px; }
+
+    .create-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:32px; margin-bottom:24px; }
+    .create-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--gold); margin-bottom:24px; letter-spacing:0.05em; }
+    
+    .field { margin-bottom:20px; }
+    .field label { display:block; font-size:11px; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+    .field input[type="text"] { width:100%; padding:12px 14px; background:var(--black); border:1px solid var(--border); color:var(--white); font-size:14px; border-radius:4px; outline:none; transition:border-color 0.2s; }
+    .field input[type="text"]:focus { border-color:var(--gold); }
+
+    .upload-zone { border:2px dashed var(--border); border-radius:6px; padding:24px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; }
+    .upload-zone:hover { border-color:var(--gold-dim); background:var(--gold-bg); }
+    .upload-zone.has-file { border-color:var(--green); border-style:solid; }
+    .upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .upload-zone .icon { font-size:24px; margin-bottom:8px; color:var(--muted); }
+    .upload-zone .label { font-size:13px; color:var(--muted); }
+    .upload-zone .filename { font-size:12px; color:var(--green); margin-top:6px; font-weight:500; }
+
+    .btn-create { width:100%; padding:16px; background:transparent; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:0.2em; cursor:pointer; border-radius:4px; transition:all 0.2s; }
+    .btn-create:hover { background:var(--gold); color:var(--black); }
+    .btn-create:disabled { opacity:0.3; cursor:not-allowed; }
+    .btn-create:disabled:hover { background:transparent; color:var(--gold); }
+
+    .progress { display:none; margin-top:16px; }
+    .progress.active { display:block; }
+    .progress-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .progress-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+    .progress-text { font-size:11px; color:var(--muted); margin-top:8px; text-align:center; }
+
+    .result-card { display:none; background:var(--surface); border:1px solid var(--green); border-radius:8px; padding:32px; text-align:center; }
+    .result-card.active { display:block; }
+    .result-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--green); margin-bottom:16px; }
+    .result-url { display:block; font-size:14px; color:var(--gold); text-decoration:none; margin-bottom:24px; word-break:break-all; }
+    .result-url:hover { text-decoration:underline; }
+    .qr-container { display:inline-block; background:white; padding:16px; border-radius:8px; margin-bottom:16px; }
+    .qr-container canvas { display:block; }
+    .result-instructions { font-size:12px; color:var(--muted); margin-top:16px; line-height:1.6; }
+    .btn-new { margin-top:24px; padding:12px 24px; background:transparent; border:1px solid var(--border); color:var(--muted); font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.15em; cursor:pointer; border-radius:4px; }
+    .btn-new:hover { border-color:var(--gold); color:var(--gold); }
+  </style>
+</head>
+<body>
+  <div class="brand">
+    <h1>X-WEB</h1>
+    <p>CREATE AR EXPERIENCE</p>
+  </div>
+
+  <div class="panel">
+    <div class="create-card" id="create-card">
+      <h2>NEW EXPERIENCE</h2>
+      
+      <div class="field">
+        <label>Experience Name</label>
+        <input type="text" id="exp-name" placeholder="e.g., Sunshine Coast Golf Hole 1">
+      </div>
+
+      <div class="field">
+        <label>Trigger Image (what people point their phone at)</label>
+        <div class="upload-zone" id="zone-image">
+          <div class="icon">&#x1F4F7;</div>
+          <div class="label">Drop image here or click to upload</div>
+          <div class="filename" id="filename-image"></div>
+          <input type="file" accept="image/*" id="input-image" onchange="handleFile(this,'image')">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Video (plays when image is detected)</label>
+        <div class="upload-zone" id="zone-video">
+          <div class="icon">&#x1F3AC;</div>
+          <div class="label">Drop MP4 here or click to upload</div>
+          <div class="filename" id="filename-video"></div>
+          <input type="file" accept="video/mp4,video/webm,video/*" id="input-video" onchange="handleFile(this,'video')">
+        </div>
+      </div>
+
+      <button class="btn-create" id="btn-create" onclick="createExperience()" disabled>CREATE EXPERIENCE</button>
+
+      <div class="progress" id="progress">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-text" id="progress-text">Uploading...</div>
+      </div>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <h2>EXPERIENCE READY</h2>
+      <a class="result-url" id="result-url" href="#" target="_blank"></a>
+      <div class="qr-container" id="qr-container"></div>
+      <p class="result-instructions">
+        Point your phone camera at the trigger image to see the video play.<br>
+        Share this QR code with your client.
+      </p>
+      <button class="btn-new" onclick="resetForm()">+ CREATE ANOTHER</button>
+    </div>
+  </div>
+
+  <!-- Hidden canvas for image processing -->
+  <canvas id="process-canvas" style="display:none;"></canvas>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYhf2q_bsS1pcUvLZNoiLBSvWCKB6VWog",
+      authDomain: "x-web-ar-platform.firebaseapp.com",
+      projectId: "x-web-ar-platform",
+      storageBucket: "x-web-ar-platform.firebasestorage.app",
+      messagingSenderId: "795991549233",
+      appId: "1:795991549233:web:741ac6e74bac19266f3c10"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
+
+    // Constants (matching X-WEB AR image-target-cli)
+    const LUMINANCE_HEIGHT = 640;
+    const THUMBNAIL_HEIGHT = 350;
+    const MIN_WIDTH = 480;
+
+    // State
+    let imageFile = null;
+    let videoFile = null;
+
+    function handleFile(input, type) {
+      const file = input.files[0];
+      if (!file) return;
+      if (type === 'image') {
+        imageFile = file;
+        document.getElementById('filename-image').textContent = file.name;
+        document.getElementById('zone-image').classList.add('has-file');
+      } else {
+        videoFile = file;
+        document.getElementById('filename-video').textContent = file.name;
+        document.getElementById('zone-video').classList.add('has-file');
+      }
+      document.getElementById('btn-create').disabled = !(imageFile && videoFile);
+    }
+
+    // ─── IMAGE TARGET GENERATION (client-side) ─────────────────────
+    // Replicates what the X-WEB AR image-target-cli does with Sharp,
+    // but using Canvas API in the browser.
+
+    function generateImageTarget(imageFile, targetName) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const origW = img.naturalWidth;
+            const origH = img.naturalHeight;
+
+            // Compute default 3:4 portrait crop (centered)
+            let cropTop, cropLeft, cropWidth, cropHeight;
+            if (origW / 3 <= origH / 4) {
+              cropWidth = origW;
+              cropHeight = Math.round((cropWidth * 4) / 3);
+              cropTop = Math.round((origH - cropHeight) / 2);
+              cropLeft = 0;
+            } else {
+              cropHeight = origH;
+              cropWidth = Math.round((cropHeight * 3) / 4);
+              cropTop = 0;
+              cropLeft = Math.round((origW - cropWidth) / 2);
+            }
+
+            // Ensure minimum dimensions
+            if (cropWidth < MIN_WIDTH) {
+              cropWidth = origW;
+              cropHeight = Math.round((cropWidth * 4) / 3);
+              if (cropHeight > origH) cropHeight = origH;
+              cropTop = Math.round((origH - cropHeight) / 2);
+              cropLeft = 0;
+            }
+
+            const canvas = document.getElementById('process-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Generate luminance image (grayscale, height=640)
+            const lumScale = LUMINANCE_HEIGHT / cropHeight;
+            const lumW = Math.round(cropWidth * lumScale);
+            const lumH = LUMINANCE_HEIGHT;
+            canvas.width = lumW;
+            canvas.height = lumH;
+            ctx.drawImage(img, cropLeft, cropTop, cropWidth, cropHeight, 0, 0, lumW, lumH);
+
+            // Convert to grayscale
+            const imageData = ctx.getImageData(0, 0, lumW, lumH);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+              const gray = Math.round(data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+              data[i] = gray;
+              data[i+1] = gray;
+              data[i+2] = gray;
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            // Export luminance as blob
+            canvas.toBlob((luminanceBlob) => {
+              // Build target data JSON (X-WEB AR target format)
+              const targetData = {
+                type: "PLANAR",
+                properties: {
+                  top: cropTop,
+                  left: cropLeft,
+                  width: cropWidth,
+                  height: cropHeight,
+                  isRotated: false,
+                  originalWidth: origW,
+                  originalHeight: origH
+                },
+                imagePath: null, // Will be set after upload
+                metadata: null,
+                name: targetName,
+                resources: {
+                  originalImage: `${targetName}_original.png`,
+                  croppedImage: `${targetName}_cropped.png`,
+                  thumbnailImage: `${targetName}_thumbnail.png`,
+                  luminanceImage: `${targetName}_luminance.png`
+                },
+                created: Date.now(),
+                updated: Date.now()
+              };
+
+              resolve({ targetData, luminanceBlob });
+            }, 'image/png');
+          } catch(e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = URL.createObjectURL(imageFile);
+      });
+    }
+
+    // ─── CREATE EXPERIENCE ─────────────────────────────────────────
+
+    async function createExperience() {
+      const name = document.getElementById('exp-name').value || 'untitled';
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'exp-' + Date.now();
+      const targetName = slug.replace(/-/g, '_');
+
+      const btn = document.getElementById('btn-create');
+      const progress = document.getElementById('progress');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+
+      btn.disabled = true;
+      progress.classList.add('active');
+
+      try {
+        // Step 1: Generate image target data
+        progressText.textContent = 'Generating image target data...';
+        progressFill.style.width = '5%';
+        const { targetData, luminanceBlob } = await generateImageTarget(imageFile, targetName);
+
+        // Step 2: Upload luminance image
+        progressText.textContent = 'Uploading luminance image...';
+        progressFill.style.width = '15%';
+        const lumRef = storage.ref(`experiences/${slug}/image-targets/${targetName}_luminance.png`);
+        await lumRef.put(luminanceBlob);
+        const luminanceUrl = await lumRef.getDownloadURL();
+
+        // Set the imagePath in target data to the hosted URL
+        targetData.imagePath = luminanceUrl;
+
+        // Step 3: Upload trigger image
+        progressText.textContent = 'Uploading trigger image...';
+        progressFill.style.width = '25%';
+        const imgRef = storage.ref(`experiences/${slug}/trigger${getExt(imageFile.name)}`);
+        await imgRef.put(imageFile);
+        const imageUrl = await imgRef.getDownloadURL();
+
+        // Step 4: Upload video
+        progressText.textContent = 'Uploading video...';
+        progressFill.style.width = '35%';
+        const videoRef = storage.ref(`experiences/${slug}/content${getExt(videoFile.name)}`);
+        const uploadTask = videoRef.put(videoFile);
+        
+        await new Promise((resolve, reject) => {
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const pct = 35 + (snapshot.bytesTransferred / snapshot.totalBytes) * 40;
+              progressFill.style.width = pct + '%';
+            },
+            reject,
+            resolve
+          );
+        });
+        const videoUrl = await videoRef.getDownloadURL();
+
+        // Step 5: Build the full AR experience HTML
+        progressText.textContent = 'Building AR experience...';
+        progressFill.style.width = '80%';
+        const arHtml = buildArExperience(name, targetName, targetData, videoUrl);
+        const htmlRef = storage.ref(`experiences/${slug}/index.html`);
+        await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
+        const experienceUrl = await htmlRef.getDownloadURL();
+
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Done!';
+
+        setTimeout(() => showResult(experienceUrl, name), 500);
+
+      } catch (err) {
+        console.error(err);
+        progressText.textContent = 'Error: ' + err.message;
+        progressFill.style.width = '0%';
+        btn.disabled = false;
+      }
+    }
+
+    // ─── BUILD AR EXPERIENCE HTML ──────────────────────────────────
+    // Generates a full, self-contained AR experience page that uses
+    // X-WEB AR engine with real image target detection.
+
+    function buildArExperience(name, targetName, targetData, videoUrl) {
+      const targetDataJSON = JSON.stringify(targetData);
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>${name} — X-WEB AR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"><\/script>
+  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"><\/script>
+  <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"><\/script>
+  <style>
+    :root {
+      --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.6); --black: #000;
+      --white: #F5F5F5; --muted: rgba(245,245,245,0.5); --red: #EF4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
+
+    /* Launch Screen */
+    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
+    .screen.active { display:flex; }
+    #launch-screen::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:0.03; background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--gold) 2px,var(--gold) 3px); }
+    .launch-content { text-align:center; padding:0 24px; z-index:10; }
+    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); font-weight:600; letter-spacing:0.05em; text-transform:uppercase; }
+    .launch-content .channel { font-family:'Oswald',sans-serif; font-size:14px; color:var(--gold); letter-spacing:0.3em; margin-top:8px; }
+    .launch-content .instructions { font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto; }
+    .divider { width:64px; height:1px; background:var(--gold-dim); margin:24px auto; }
+    .xweb-btn { display:inline-flex; align-items:center; justify-content:center; padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; transition:all 0.3s; }
+    .xweb-btn:hover { background:var(--gold); color:var(--black); }
+    .xweb-btn:active { transform:scale(0.95); }
+
+    /* Camera Screen */
+    #camera-screen { background:var(--black); }
+    #ar-container { position:absolute; inset:0; z-index:0; }
+    #ar-container a-scene { position:absolute; top:0; left:0; width:100%; height:100%; }
+    .ar-overlay { position:absolute; inset:0; z-index:20; pointer-events:none; }
+    .ar-overlay header, .ar-overlay .tap-overlay button, .ar-overlay .back-btn { pointer-events:auto; }
+    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }
+    .back-btn { display:flex; align-items:center; gap:4px; background:none; border:none; color:var(--gold); font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; }
+    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }
+    .ar-footer p { font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); }
+    .status-dot { width:6px; height:6px; border-radius:50%; display:inline-block; animation:pulse 2s ease-in-out infinite; }
+    .status-dot.scanning { background:var(--gold); }
+    .status-dot.live { background:var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+    /* Viewfinder */
+    .viewfinder { position:absolute; inset:60px 16px 80px 16px; pointer-events:none; }
+    .vf-corner { position:absolute; width:24px; height:24px; border-color:var(--gold-dim); }
+    .vf-corner.tl { top:0; left:0; border-top:1px solid; border-left:1px solid; }
+    .vf-corner.tr { top:0; right:0; border-top:1px solid; border-right:1px solid; }
+    .vf-corner.bl { bottom:0; left:0; border-bottom:1px solid; border-left:1px solid; }
+    .vf-corner.br { bottom:0; right:0; border-bottom:1px solid; border-right:1px solid; }
+
+    /* Tap overlay */
+    .tap-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:25; pointer-events:auto; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+    .tap-overlay.visible { opacity:1; pointer-events:auto; }
+
+    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; z-index:10; }
+  </style>
+</head>
+<body>
+  <!-- Launch Screen -->
+  <div id="launch-screen" class="screen active">
+    <div class="launch-content">
+      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
+      <div class="divider"></div>
+      <h1>${name}</h1>
+      <div class="divider"></div>
+      <p class="instructions">Point your camera at the target image to begin the experience.</p>
+      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>
+    </div>
+    <div class="powered-by">POWERED BY X-WEB.IO</div>
+  </div>
+
+  <!-- Camera / AR Screen -->
+  <div id="camera-screen" class="screen">
+    <div id="ar-container"></div>
+    <div class="ar-overlay">
+      <header class="ar-header">
+        <button class="back-btn" onclick="exitCamera()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          EXIT
+        </button>
+        <span style="font-family:'Oswald',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.15em;">X-WEB</span>
+        <div id="ar-status" style="display:flex; align-items:center; gap:6px;">
+          <span class="status-dot scanning" id="status-dot"></span>
+          <span id="status-label" style="font-family:'Oswald',sans-serif; font-size:9px; color:var(--gold-dim); letter-spacing:0.1em;">SCANNING</span>
+        </div>
+      </header>
+      <div class="viewfinder" id="viewfinder">
+        <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+        <div class="vf-corner bl"></div><div class="vf-corner br"></div>
+      </div>
+      <div class="tap-overlay" id="tap-overlay">
+        <button class="xweb-btn" onclick="playContent()">TAP TO PLAY</button>
+      </div>
+      <div class="ar-footer">
+        <p id="scan-hint">Point camera at target image</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── CONFIG ─────────────────────────────────────────────────
+    const TARGET_DATA = ${targetDataJSON};
+    const VIDEO_URL = '${videoUrl}';
+    const TARGET_NAME = '${targetName}';
+
+    // ─── CAMERA LAUNCH ──────────────────────────────────────────
+    function launchCamera() {
+      document.getElementById('launch-screen').classList.remove('active');
+      document.getElementById('camera-screen').classList.add('active');
+      initAR();
+    }
+
+    function exitCamera() {
+      const scene = document.querySelector('a-scene');
+      if (scene) scene.remove();
+      document.querySelectorAll('video, audio').forEach(el => { el.pause(); el.currentTime = 0; });
+      document.getElementById('camera-screen').classList.remove('active');
+      document.getElementById('launch-screen').classList.add('active');
+    }
+
+    // ─── AR INITIALIZATION ──────────────────────────────────────
+    async function initAR() {
+      try {
+        await waitForXR8();
+        const XR8 = window.XR8;
+
+        // Configure with our image target data
+        XR8.XrController.configure({
+          imageTargetData: [TARGET_DATA],
+        });
+
+        // Create A-Frame scene
+        createScene();
+        setStatus('scanning');
+      } catch(err) {
+        console.error('[X-WEB] AR init error:', err);
+        document.getElementById('scan-hint').textContent = 'Error: ' + err.message;
+      }
+    }
+
+    function waitForXR8() {
+      return new Promise((resolve, reject) => {
+        if (window.XR8) return resolve();
+        window.addEventListener('xrloaded', () => resolve(), { once: true });
+        setTimeout(() => reject(new Error('X-WEB AR engine failed to load (15s timeout)')), 15000);
+      });
+    }
+
+    // ─── SCENE CREATION ─────────────────────────────────────────
+    function createScene() {
+      const container = document.getElementById('ar-container');
+      container.innerHTML = \`
+        <a-scene
+          xrextras-gesture-detector
+          xrextras-loading
+          xrextras-runtime-error
+          renderer="colorManagement:true"
+          xrweb="disableWorldTracking: true"
+          embedded
+        >
+          <a-assets>
+            <video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+          </a-assets>
+          <a-camera position="0 4 10" raycaster="objects: .cantap" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
+          <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
+          <a-light type="ambient" intensity="1"></a-light>
+          <xrextras-named-image-target name="\${TARGET_NAME}">
+            <a-entity
+              xrextras-play-video="video: #target-video; thumb: #target-video; canstop: true"
+              geometry="primitive: plane; width: 1; height: 0.5625;"
+            ></a-entity>
+          </xrextras-named-image-target>
+        </a-scene>
+      \`;
+
+      // Listen for target events
+      const scene = container.querySelector('a-scene');
+      scene.addEventListener('loaded', () => {
+        const targetEl = document.querySelector('xrextras-named-image-target[name="' + TARGET_NAME + '"]');
+        if (!targetEl) return;
+
+        targetEl.addEventListener('xrimagefound', () => {
+          console.log('[X-WEB] Target found: ' + TARGET_NAME);
+          setStatus('detected');
+          document.getElementById('tap-overlay').classList.add('visible');
+        });
+
+        targetEl.addEventListener('xrimagelost', () => {
+          console.log('[X-WEB] Target lost: ' + TARGET_NAME);
+          setStatus('scanning');
+          document.getElementById('tap-overlay').classList.remove('visible');
+        });
+      });
+    }
+
+    // ─── PLAYBACK ───────────────────────────────────────────────
+    function playContent() {
+      const video = document.getElementById('target-video');
+      if (video) {
+        video.play().then(() => {
+          setStatus('live');
+          document.getElementById('tap-overlay').classList.remove('visible');
+        }).catch(err => console.error('[X-WEB] Play error:', err));
+      }
+    }
+
+    // ─── STATUS ─────────────────────────────────────────────────
+    function setStatus(state) {
+      const dot = document.getElementById('status-dot');
+      const label = document.getElementById('status-label');
+      const viewfinder = document.getElementById('viewfinder');
+      const hint = document.getElementById('scan-hint');
+
+      dot.className = 'status-dot';
+      switch(state) {
+        case 'scanning':
+          dot.classList.add('scanning');
+          label.textContent = 'SCANNING';
+          viewfinder.style.opacity = '1';
+          hint.textContent = 'Point camera at target image';
+          break;
+        case 'detected':
+          dot.classList.add('scanning');
+          label.textContent = 'DETECTED';
+          label.style.color = 'var(--gold)';
+          viewfinder.style.opacity = '0';
+          hint.textContent = 'Target detected — tap to play';
+          break;
+        case 'live':
+          dot.classList.add('live');
+          label.textContent = 'LIVE';
+          label.style.color = 'var(--red)';
+          viewfinder.style.opacity = '0';
+          hint.textContent = '';
+          break;
+      }
+    }
+  <\/script>
+</body>
+</html>`;
+    }
+
+    // ─── RESULT DISPLAY ────────────────────────────────────────────
+
+    function showResult(url, name) {
+      document.getElementById('create-card').style.display = 'none';
+      const resultCard = document.getElementById('result-card');
+      resultCard.classList.add('active');
+
+      const resultUrl = document.getElementById('result-url');
+      resultUrl.href = url;
+      resultUrl.textContent = name + ' — AR Experience (tap to open)';
+
+      // Generate QR code using qrcode-generator library
+      const qrContainer = document.getElementById('qr-container');
+      qrContainer.innerHTML = '';
+      
+      try {
+        const qr = qrcode(0, 'L');
+        qr.addData(url);
+        qr.make();
+        const svg = qr.createSvgTag({ cellSize: 4, margin: 4 });
+        qrContainer.innerHTML = svg;
+        const svgEl = qrContainer.querySelector('svg');
+        if (svgEl) {
+          svgEl.style.width = '200px';
+          svgEl.style.height = '200px';
+          svgEl.style.display = 'block';
+        }
+      } catch(e) {
+        console.error('QR exception:', e);
+        qrContainer.innerHTML = '<p style="color:#C9A84C;font-size:11px;padding:20px;word-break:break-all;">' + url + '</p>';
+      }
+
+      // Also show copyable URL below QR
+      const urlText = document.createElement('p');
+      urlText.style.cssText = 'font-size:10px; color:#999; margin-top:12px; word-break:break-all; max-width:280px;';
+      urlText.textContent = url;
+      qrContainer.parentElement.insertBefore(urlText, qrContainer.nextSibling);
+    }
+
+    function resetForm() {
+      imageFile = null;
+      videoFile = null;
+      document.getElementById('create-card').style.display = 'block';
+      document.getElementById('result-card').classList.remove('active');
+      document.getElementById('filename-image').textContent = '';
+      document.getElementById('filename-video').textContent = '';
+      document.getElementById('zone-image').classList.remove('has-file');
+      document.getElementById('zone-video').classList.remove('has-file');
+      document.getElementById('btn-create').disabled = true;
+      document.getElementById('progress').classList.remove('active');
+      document.getElementById('exp-name').value = '';
+    }
+
+    function getExt(filename) {
+      const idx = filename.lastIndexOf('.');
+      return idx >= 0 ? filename.substring(idx) : '';
+    }
+  </script>
+</body>
+</html>

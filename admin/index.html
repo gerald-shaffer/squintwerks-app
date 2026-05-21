@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>X-WEB — Create Experience</title>
+  <title>X-WEB — AR Maker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -18,20 +18,40 @@
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Inter',sans-serif; background:var(--black); color:var(--white); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:40px 20px; }
-    
+
     .brand { text-align:center; margin-bottom:40px; }
     .brand h1 { font-family:'Oswald',sans-serif; font-size:36px; color:var(--gold); letter-spacing:0.15em; }
     .brand p { font-size:12px; color:var(--muted); letter-spacing:0.2em; margin-top:4px; }
 
     .panel { width:100%; max-width:600px; }
 
-    .create-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:32px; margin-bottom:24px; }
-    .create-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--gold); margin-bottom:24px; letter-spacing:0.05em; }
-    
+    /* ─── INTRO SCREEN ─── */
+    .intro-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:48px 32px; text-align:center; margin-bottom:24px; }
+    .intro-card h2 { font-family:'Oswald',sans-serif; font-size:24px; color:var(--white); margin-bottom:8px; letter-spacing:0.05em; }
+    .intro-card .subtitle { font-size:13px; color:var(--muted); margin-bottom:32px; line-height:1.6; }
+    .intro-card .divider { width:64px; height:1px; background:var(--gold-dim); margin:24px auto; }
+
+    .mode-select { margin-bottom:24px; }
+    .mode-select label { display:block; font-size:11px; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+    .mode-select select { width:100%; max-width:320px; padding:14px 16px; background:var(--black); border:1px solid var(--border); color:var(--gold); font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:0.1em; border-radius:4px; outline:none; cursor:pointer; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23C9A84C' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; }
+    .mode-select select:focus { border-color:var(--gold); }
+    .mode-select select option { background:var(--surface); color:var(--white); }
+
+    .btn-start { display:inline-flex; align-items:center; justify-content:center; padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; transition:all 0.3s; border-radius:4px; }
+    .btn-start:hover { background:var(--gold); color:var(--black); }
+    .btn-start:disabled { opacity:0.3; cursor:not-allowed; }
+    .btn-start:disabled:hover { background:transparent; color:var(--gold); }
+
+    /* ─── MAKER SCREENS ─── */
+    .maker-card { display:none; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:32px; margin-bottom:24px; }
+    .maker-card.active { display:block; }
+    .maker-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--gold); margin-bottom:6px; letter-spacing:0.05em; }
+    .maker-card .maker-desc { font-size:12px; color:var(--muted); margin-bottom:24px; }
+
     .field { margin-bottom:20px; }
     .field label { display:block; font-size:11px; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
-    .field input[type="text"] { width:100%; padding:12px 14px; background:var(--black); border:1px solid var(--border); color:var(--white); font-size:14px; border-radius:4px; outline:none; transition:border-color 0.2s; }
-    .field input[type="text"]:focus { border-color:var(--gold); }
+    .field input[type="text"], .field input[type="number"], .field input[type="password"] { width:100%; padding:12px 14px; background:var(--black); border:1px solid var(--border); color:var(--white); font-size:14px; border-radius:4px; outline:none; transition:border-color 0.2s; }
+    .field input:focus { border-color:var(--gold); }
 
     .upload-zone { border:2px dashed var(--border); border-radius:6px; padding:24px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; }
     .upload-zone:hover { border-color:var(--gold-dim); background:var(--gold-bg); }
@@ -48,120 +68,247 @@
 
     .progress { display:none; margin-top:16px; }
     .progress.active { display:block; }
-    .progress-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .progress-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
     .progress-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
     .progress-text { font-size:11px; color:var(--muted); margin-top:8px; text-align:center; }
 
+    .btn-back { display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--muted); font-size:12px; cursor:pointer; margin-bottom:20px; padding:4px 0; }
+    .btn-back:hover { color:var(--gold); }
+
+    /* ─── RESULT CARD ─── */
     .result-card { display:none; background:var(--surface); border:1px solid var(--green); border-radius:8px; padding:32px; text-align:center; }
     .result-card.active { display:block; }
     .result-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--green); margin-bottom:16px; }
     .result-url { display:block; font-size:14px; color:var(--gold); text-decoration:none; margin-bottom:24px; word-break:break-all; }
     .result-url:hover { text-decoration:underline; }
     .qr-container { display:inline-block; background:white; padding:16px; border-radius:8px; margin-bottom:16px; }
-    .qr-container canvas { display:block; }
+    .qr-container svg { display:block; }
     .result-instructions { font-size:12px; color:var(--muted); margin-top:16px; line-height:1.6; }
+    .result-url-text { font-size:10px; color:var(--muted); margin-top:12px; word-break:break-all; max-width:280px; display:inline-block; }
     .btn-new { margin-top:24px; padding:12px 24px; background:transparent; border:1px solid var(--border); color:var(--muted); font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.15em; cursor:pointer; border-radius:4px; }
     .btn-new:hover { border-color:var(--gold); color:var(--gold); }
+
+    .powered-by { margin-top:48px; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; text-align:center; }
   </style>
 </head>
 <body>
   <div class="brand">
     <h1>X-WEB</h1>
-    <p>CREATE AR EXPERIENCE</p>
+    <p>AR MAKER</p>
   </div>
 
   <div class="panel">
-    <div class="create-card" id="create-card">
-      <h2>NEW EXPERIENCE</h2>
-      
+    <!-- INTRO SCREEN -->
+    <div class="intro-card" id="intro-card">
+      <h2>Welcome to X-WEB AR Maker</h2>
+      <p class="subtitle">Create augmented reality experiences in seconds.<br>Upload your assets, get a live URL and QR code.</p>
+      <div class="divider"></div>
+      <div class="mode-select">
+        <label>Select AR Type</label>
+        <select id="mode-select" onchange="updateStartBtn()">
+          <option value="">— Choose —</option>
+          <option value="image">IMAGE AR — Scan image, play video</option>
+          <option value="gps">GPS AR — Place 3D at location</option>
+          <option value="comms">COMMS AR — Scan image, make call</option>
+        </select>
+      </div>
+      <button class="btn-start" id="btn-start" disabled onclick="startMaker()">BEGIN</button>
+    </div>
+
+    <!-- IMAGE AR MAKER -->
+    <div class="maker-card" id="maker-image">
+      <button class="btn-back" onclick="goBack()">&#8592; Back</button>
+      <h2>IMAGE AR MAKER</h2>
+      <p class="maker-desc">Upload a trigger image and a video. When someone scans the image, the video plays.</p>
+
       <div class="field">
         <label>Experience Name</label>
-        <input type="text" id="exp-name" placeholder="e.g., Sunshine Coast Golf Hole 1">
+        <input type="text" id="img-name" placeholder="e.g., Sunshine Coast Golf Hole 1">
       </div>
-
       <div class="field">
         <label>Trigger Image (what people point their phone at)</label>
-        <div class="upload-zone" id="zone-image">
+        <div class="upload-zone" id="zone-img-image">
           <div class="icon">&#x1F4F7;</div>
           <div class="label">Drop image here or click to upload</div>
-          <div class="filename" id="filename-image"></div>
-          <input type="file" accept="image/*" id="input-image" onchange="handleFile(this,'image')">
+          <div class="filename" id="filename-img-image"></div>
+          <input type="file" accept="image/*" id="input-img-image" onchange="handleFile(this,'img-image')">
         </div>
       </div>
-
       <div class="field">
         <label>Video (plays when image is detected)</label>
-        <div class="upload-zone" id="zone-video">
+        <div class="upload-zone" id="zone-img-video">
           <div class="icon">&#x1F3AC;</div>
           <div class="label">Drop MP4 here or click to upload</div>
-          <div class="filename" id="filename-video"></div>
-          <input type="file" accept="video/mp4,video/webm,video/*" id="input-video" onchange="handleFile(this,'video')">
+          <div class="filename" id="filename-img-video"></div>
+          <input type="file" accept="video/mp4,video/webm,video/*" id="input-img-video" onchange="handleFile(this,'img-video')">
         </div>
       </div>
-
-      <button class="btn-create" id="btn-create" onclick="createExperience()" disabled>CREATE EXPERIENCE</button>
-
-      <div class="progress" id="progress">
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <div class="progress-text" id="progress-text">Uploading...</div>
+      <button class="btn-create" id="btn-create-image" onclick="createImageExperience()" disabled>CREATE EXPERIENCE</button>
+      <div class="progress" id="progress-image">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill-image"></div></div>
+        <div class="progress-text" id="progress-text-image">Uploading...</div>
       </div>
     </div>
 
+    <!-- GPS AR MAKER -->
+    <div class="maker-card" id="maker-gps">
+      <button class="btn-back" onclick="goBack()">&#8592; Back</button>
+      <h2>GPS AR MAKER</h2>
+      <p class="maker-desc">Place a 3D model at a real-world GPS location. When someone arrives, the model appears in their camera.</p>
+
+      <div class="field">
+        <label>Experience Name</label>
+        <input type="text" id="gps-name" placeholder="e.g., Landyville — Camel Trophy 1981">
+      </div>
+      <div class="field">
+        <label>Latitude</label>
+        <input type="number" step="any" id="gps-lat" placeholder="e.g., -26.6534">
+      </div>
+      <div class="field">
+        <label>Longitude</label>
+        <input type="number" step="any" id="gps-lng" placeholder="e.g., 153.0914">
+      </div>
+      <div class="field">
+        <label>3D Model (.glb file)</label>
+        <div class="upload-zone" id="zone-gps-model">
+          <div class="icon">&#x1F4E6;</div>
+          <div class="label">Drop .glb file here or click to upload</div>
+          <div class="filename" id="filename-gps-model"></div>
+          <input type="file" accept=".glb,.gltf" id="input-gps-model" onchange="handleFile(this,'gps-model')">
+        </div>
+      </div>
+      <button class="btn-create" id="btn-create-gps" onclick="createGpsExperience()" disabled>CREATE EXPERIENCE</button>
+      <div class="progress" id="progress-gps">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill-gps"></div></div>
+        <div class="progress-text" id="progress-text-gps">Uploading...</div>
+      </div>
+    </div>
+
+    <!-- COMMS AR MAKER -->
+    <div class="maker-card" id="maker-comms">
+      <button class="btn-back" onclick="goBack()">&#8592; Back</button>
+      <h2>COMMS AR MAKER</h2>
+      <p class="maker-desc">Scan an image to initiate a VoIP call. Password protected.</p>
+
+      <div class="field">
+        <label>Experience Name</label>
+        <input type="text" id="comms-name" placeholder="e.g., Hotel Concierge Direct Line">
+      </div>
+      <div class="field">
+        <label>Trigger Image</label>
+        <div class="upload-zone" id="zone-comms-image">
+          <div class="icon">&#x1F4F7;</div>
+          <div class="label">Drop image here or click to upload</div>
+          <div class="filename" id="filename-comms-image"></div>
+          <input type="file" accept="image/*" id="input-comms-image" onchange="handleFile(this,'comms-image')">
+        </div>
+      </div>
+      <div class="field">
+        <label>Phone Number (for VoIP connection)</label>
+        <input type="text" id="comms-phone" placeholder="e.g., +61412345678">
+      </div>
+      <div class="field">
+        <label>Access Password</label>
+        <input type="password" id="comms-password" placeholder="Password to access this experience">
+      </div>
+      <button class="btn-create" id="btn-create-comms" onclick="createCommsExperience()" disabled>CREATE EXPERIENCE</button>
+      <div class="progress" id="progress-comms">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill-comms"></div></div>
+        <div class="progress-text" id="progress-text-comms">Uploading...</div>
+      </div>
+    </div>
+
+    <!-- RESULT CARD -->
     <div class="result-card" id="result-card">
       <h2>EXPERIENCE READY</h2>
       <a class="result-url" id="result-url" href="#" target="_blank"></a>
       <div class="qr-container" id="qr-container"></div>
+      <p class="result-url-text" id="result-url-text"></p>
       <p class="result-instructions">
-        Point your phone camera at the trigger image to see the video play.<br>
-        Share this QR code with your client.
+        Share this QR code with your client.<br>
+        Scan it with any phone camera to launch the AR experience.
       </p>
-      <button class="btn-new" onclick="resetForm()">+ CREATE ANOTHER</button>
+      <button class="btn-new" onclick="goBack()">+ CREATE ANOTHER</button>
     </div>
   </div>
 
-  <!-- Hidden canvas for image processing -->
-  <canvas id="process-canvas" style="display:none;"></canvas>
+  <div class="powered-by">POWERED BY X-WEB.IO</div>
 
   <script>
-    // Firebase config
+    // ─── FIREBASE CONFIG ───────────────────────────────────────────
     const firebaseConfig = {
-      apiKey: "AIzaSyBYhf2q_bsS1pcUvLZNoiLBSvWCKB6VWog",
+      apiKey: "AIzaSyAOGfjVMlHGnnKIcNMSCxgJGMnQ5xNOcgc",
       authDomain: "x-web-ar-platform.firebaseapp.com",
       projectId: "x-web-ar-platform",
       storageBucket: "x-web-ar-platform.firebasestorage.app",
-      messagingSenderId: "795991549233",
-      appId: "1:795991549233:web:741ac6e74bac19266f3c10"
+      messagingSenderId: "463867270498",
+      appId: "1:463867270498:web:x-web-ar-platform"
     };
     firebase.initializeApp(firebaseConfig);
     const storage = firebase.storage();
 
-    // Constants (matching 8th Wall image-target-cli)
-    const LUMINANCE_HEIGHT = 640;
-    const THUMBNAIL_HEIGHT = 350;
-    const MIN_WIDTH = 480;
+    // ─── STATE ─────────────────────────────────────────────────────
+    let currentMode = '';
+    let files = {};
 
-    // State
-    let imageFile = null;
-    let videoFile = null;
-
-    function handleFile(input, type) {
-      const file = input.files[0];
-      if (!file) return;
-      if (type === 'image') {
-        imageFile = file;
-        document.getElementById('filename-image').textContent = file.name;
-        document.getElementById('zone-image').classList.add('has-file');
-      } else {
-        videoFile = file;
-        document.getElementById('filename-video').textContent = file.name;
-        document.getElementById('zone-video').classList.add('has-file');
-      }
-      document.getElementById('btn-create').disabled = !(imageFile && videoFile);
+    // ─── NAVIGATION ────────────────────────────────────────────────
+    function updateStartBtn() {
+      document.getElementById('btn-start').disabled = !document.getElementById('mode-select').value;
     }
 
-    // ─── IMAGE TARGET GENERATION (client-side) ─────────────────────
-    // Replicates what the 8th Wall image-target-cli does with Sharp,
-    // but using Canvas API in the browser.
+    function startMaker() {
+      currentMode = document.getElementById('mode-select').value;
+      document.getElementById('intro-card').style.display = 'none';
+      document.getElementById('result-card').classList.remove('active');
+      document.getElementById('maker-' + currentMode).classList.add('active');
+    }
+
+    function goBack() {
+      document.querySelectorAll('.maker-card').forEach(c => c.classList.remove('active'));
+      document.getElementById('result-card').classList.remove('active');
+      document.getElementById('intro-card').style.display = 'block';
+      files = {};
+      // Reset all forms
+      document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('has-file'));
+      document.querySelectorAll('[id^="filename-"]').forEach(f => f.textContent = '');
+      document.querySelectorAll('.btn-create').forEach(b => b.disabled = true);
+      document.querySelectorAll('.progress').forEach(p => p.classList.remove('active'));
+    }
+
+    // ─── FILE HANDLING ─────────────────────────────────────────────
+    function handleFile(input, key) {
+      const file = input.files[0];
+      if (!file) return;
+      files[key] = file;
+      document.getElementById('filename-' + key).textContent = file.name;
+      document.getElementById('zone-' + key).classList.add('has-file');
+      validateForm();
+    }
+
+    function validateForm() {
+      if (currentMode === 'image') {
+        document.getElementById('btn-create-image').disabled = !(files['img-image'] && files['img-video']);
+      } else if (currentMode === 'gps') {
+        document.getElementById('btn-create-gps').disabled = !(files['gps-model'] && document.getElementById('gps-lat').value && document.getElementById('gps-lng').value);
+      } else if (currentMode === 'comms') {
+        document.getElementById('btn-create-comms').disabled = !(files['comms-image'] && document.getElementById('comms-phone').value);
+      }
+    }
+
+    // Add input listeners for GPS and Comms fields
+    document.addEventListener('DOMContentLoaded', () => {
+      ['gps-lat', 'gps-lng', 'gps-name'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => { currentMode = 'gps'; validateForm(); });
+      });
+      ['comms-phone', 'comms-password', 'comms-name'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => { currentMode = 'comms'; validateForm(); });
+      });
+    });
+
+    // ─── IMAGE TARGET GENERATION ───────────────────────────────────
+    const LUMINANCE_HEIGHT = 640;
 
     function generateImageTarget(imageFile, targetName) {
       return new Promise((resolve, reject) => {
@@ -170,79 +317,33 @@
           try {
             const origW = img.naturalWidth;
             const origH = img.naturalHeight;
+            const scale = LUMINANCE_HEIGHT / origH;
+            const scaledW = Math.round(origW * scale);
+            const scaledH = LUMINANCE_HEIGHT;
 
-            // Compute default 3:4 portrait crop (centered)
-            let cropTop, cropLeft, cropWidth, cropHeight;
-            if (origW / 3 <= origH / 4) {
-              cropWidth = origW;
-              cropHeight = Math.round((cropWidth * 4) / 3);
-              cropTop = Math.round((origH - cropHeight) / 2);
-              cropLeft = 0;
-            } else {
-              cropHeight = origH;
-              cropWidth = Math.round((cropHeight * 3) / 4);
-              cropTop = 0;
-              cropLeft = Math.round((origW - cropWidth) / 2);
-            }
-
-            // Ensure minimum dimensions
-            if (cropWidth < MIN_WIDTH) {
-              cropWidth = origW;
-              cropHeight = Math.round((cropWidth * 4) / 3);
-              if (cropHeight > origH) cropHeight = origH;
-              cropTop = Math.round((origH - cropHeight) / 2);
-              cropLeft = 0;
-            }
-
-            const canvas = document.getElementById('process-canvas');
+            const canvas = document.createElement('canvas');
+            canvas.width = scaledW;
+            canvas.height = scaledH;
             const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, scaledW, scaledH);
 
-            // Generate luminance image (grayscale, height=640)
-            const lumScale = LUMINANCE_HEIGHT / cropHeight;
-            const lumW = Math.round(cropWidth * lumScale);
-            const lumH = LUMINANCE_HEIGHT;
-            canvas.width = lumW;
-            canvas.height = lumH;
-            ctx.drawImage(img, cropLeft, cropTop, cropWidth, cropHeight, 0, 0, lumW, lumH);
-
-            // Convert to grayscale
-            const imageData = ctx.getImageData(0, 0, lumW, lumH);
+            const imageData = ctx.getImageData(0, 0, scaledW, scaledH);
             const data = imageData.data;
             for (let i = 0; i < data.length; i += 4) {
-              const gray = Math.round(data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
-              data[i] = gray;
-              data[i+1] = gray;
-              data[i+2] = gray;
+              const gray = Math.round(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
+              data[i] = data[i+1] = data[i+2] = gray;
             }
             ctx.putImageData(imageData, 0, 0);
 
-            // Export luminance as blob
             canvas.toBlob((luminanceBlob) => {
-              // Build target data JSON (same shape as 8th Wall CLI output)
               const targetData = {
                 type: "PLANAR",
-                properties: {
-                  top: cropTop,
-                  left: cropLeft,
-                  width: cropWidth,
-                  height: cropHeight,
-                  isRotated: false,
-                  originalWidth: origW,
-                  originalHeight: origH
-                },
-                imagePath: null, // Will be set after upload
-                metadata: null,
+                properties: { top: 0, left: 0, width: scaledW, height: scaledH, isRotated: false, originalWidth: origW, originalHeight: origH },
                 name: targetName,
-                resources: {
-                  originalImage: `${targetName}_original.png`,
-                  croppedImage: `${targetName}_cropped.png`,
-                  thumbnailImage: `${targetName}_thumbnail.png`,
-                  luminanceImage: `${targetName}_luminance.png`
-                },
+                resources: { luminanceImage: `${targetName}_luminance.png` },
                 created: Date.now(),
                 updated: Date.now()
               };
-
               resolve({ targetData, luminanceBlob });
             }, 'image/png');
           } catch(e) { reject(e); }
@@ -252,90 +353,149 @@
       });
     }
 
-    // ─── CREATE EXPERIENCE ─────────────────────────────────────────
-
-    async function createExperience() {
-      const name = document.getElementById('exp-name').value || 'untitled';
+    // ─── CREATE IMAGE EXPERIENCE ───────────────────────────────────
+    async function createImageExperience() {
+      const name = document.getElementById('img-name').value || 'untitled';
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'exp-' + Date.now();
       const targetName = slug.replace(/-/g, '_');
 
-      const btn = document.getElementById('btn-create');
-      const progress = document.getElementById('progress');
-      const progressFill = document.getElementById('progress-fill');
-      const progressText = document.getElementById('progress-text');
+      const btn = document.getElementById('btn-create-image');
+      const progress = document.getElementById('progress-image');
+      const progressFill = document.getElementById('progress-fill-image');
+      const progressText = document.getElementById('progress-text-image');
 
       btn.disabled = true;
       progress.classList.add('active');
 
       try {
-        // Step 1: Generate image target data
-        progressText.textContent = 'Generating image target data...';
-        progressFill.style.width = '5%';
-        const { targetData, luminanceBlob } = await generateImageTarget(imageFile, targetName);
+        progressText.textContent = 'Generating image target...';
+        progressFill.style.width = '10%';
+        const { targetData, luminanceBlob } = await generateImageTarget(files['img-image'], targetName);
 
-        // Step 2: Upload luminance image
         progressText.textContent = 'Uploading luminance image...';
-        progressFill.style.width = '15%';
+        progressFill.style.width = '25%';
         const lumRef = storage.ref(`experiences/${slug}/image-targets/${targetName}_luminance.png`);
         await lumRef.put(luminanceBlob);
         const luminanceUrl = await lumRef.getDownloadURL();
-
-        // Set the imagePath in target data to the hosted URL
         targetData.imagePath = luminanceUrl;
 
-        // Step 3: Upload trigger image
         progressText.textContent = 'Uploading trigger image...';
-        progressFill.style.width = '25%';
-        const imgRef = storage.ref(`experiences/${slug}/trigger${getExt(imageFile.name)}`);
-        await imgRef.put(imageFile);
-        const imageUrl = await imgRef.getDownloadURL();
+        progressFill.style.width = '40%';
+        const imgRef = storage.ref(`experiences/${slug}/trigger${getExt(files['img-image'].name)}`);
+        await imgRef.put(files['img-image']);
 
-        // Step 4: Upload video
         progressText.textContent = 'Uploading video...';
-        progressFill.style.width = '35%';
-        const videoRef = storage.ref(`experiences/${slug}/content${getExt(videoFile.name)}`);
-        const uploadTask = videoRef.put(videoFile);
-        
-        await new Promise((resolve, reject) => {
-          uploadTask.on('state_changed',
-            (snapshot) => {
-              const pct = 35 + (snapshot.bytesTransferred / snapshot.totalBytes) * 40;
-              progressFill.style.width = pct + '%';
-            },
-            reject,
-            resolve
-          );
-        });
-        const videoUrl = await videoRef.getDownloadURL();
+        progressFill.style.width = '60%';
+        const vidRef = storage.ref(`experiences/${slug}/video${getExt(files['img-video'].name)}`);
+        await vidRef.put(files['img-video']);
+        const videoUrl = await vidRef.getDownloadURL();
 
-        // Step 5: Build the full AR experience HTML
         progressText.textContent = 'Building AR experience...';
         progressFill.style.width = '80%';
-        const arHtml = buildArExperience(name, targetName, targetData, videoUrl);
+        const arHtml = buildImageArExperience(name, targetName, targetData, videoUrl);
         const htmlRef = storage.ref(`experiences/${slug}/index.html`);
         await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
         const experienceUrl = await htmlRef.getDownloadURL();
 
         progressFill.style.width = '100%';
         progressText.textContent = 'Done!';
-
         setTimeout(() => showResult(experienceUrl, name), 500);
-
       } catch (err) {
         console.error(err);
         progressText.textContent = 'Error: ' + err.message;
-        progressFill.style.width = '0%';
         btn.disabled = false;
       }
     }
 
-    // ─── BUILD AR EXPERIENCE HTML ──────────────────────────────────
-    // Generates a full, self-contained AR experience page that uses
-    // 8th Wall engine with real image target detection.
+    // ─── CREATE GPS EXPERIENCE ─────────────────────────────────────
+    async function createGpsExperience() {
+      const name = document.getElementById('gps-name').value || 'untitled-gps';
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'gps-' + Date.now();
+      const lat = parseFloat(document.getElementById('gps-lat').value);
+      const lng = parseFloat(document.getElementById('gps-lng').value);
 
-    function buildArExperience(name, targetName, targetData, videoUrl) {
+      const btn = document.getElementById('btn-create-gps');
+      const progress = document.getElementById('progress-gps');
+      const progressFill = document.getElementById('progress-fill-gps');
+      const progressText = document.getElementById('progress-text-gps');
+
+      btn.disabled = true;
+      progress.classList.add('active');
+
+      try {
+        progressText.textContent = 'Uploading 3D model...';
+        progressFill.style.width = '30%';
+        const modelRef = storage.ref(`experiences/${slug}/model.glb`);
+        await modelRef.put(files['gps-model']);
+        const modelUrl = await modelRef.getDownloadURL();
+
+        progressText.textContent = 'Building GPS AR experience...';
+        progressFill.style.width = '70%';
+        const arHtml = buildGpsArExperience(name, lat, lng, modelUrl);
+        const htmlRef = storage.ref(`experiences/${slug}/index.html`);
+        await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
+        const experienceUrl = await htmlRef.getDownloadURL();
+
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Done!';
+        setTimeout(() => showResult(experienceUrl, name), 500);
+      } catch (err) {
+        console.error(err);
+        progressText.textContent = 'Error: ' + err.message;
+        btn.disabled = false;
+      }
+    }
+
+    // ─── CREATE COMMS EXPERIENCE ───────────────────────────────────
+    async function createCommsExperience() {
+      const name = document.getElementById('comms-name').value || 'untitled-comms';
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'comms-' + Date.now();
+      const phone = document.getElementById('comms-phone').value;
+      const password = document.getElementById('comms-password').value || 'gerald';
+
+      const btn = document.getElementById('btn-create-comms');
+      const progress = document.getElementById('progress-comms');
+      const progressFill = document.getElementById('progress-fill-comms');
+      const progressText = document.getElementById('progress-text-comms');
+
+      btn.disabled = true;
+      progress.classList.add('active');
+
+      try {
+        progressText.textContent = 'Uploading trigger image...';
+        progressFill.style.width = '30%';
+        const imgRef = storage.ref(`experiences/${slug}/trigger${getExt(files['comms-image'].name)}`);
+        await imgRef.put(files['comms-image']);
+
+        progressText.textContent = 'Generating image target...';
+        progressFill.style.width = '50%';
+        const targetName = slug.replace(/-/g, '_');
+        const { targetData, luminanceBlob } = await generateImageTarget(files['comms-image'], targetName);
+        const lumRef = storage.ref(`experiences/${slug}/image-targets/${targetName}_luminance.png`);
+        await lumRef.put(luminanceBlob);
+        const luminanceUrl = await lumRef.getDownloadURL();
+        targetData.imagePath = luminanceUrl;
+
+        progressText.textContent = 'Building Comms AR experience...';
+        progressFill.style.width = '80%';
+        const arHtml = buildCommsArExperience(name, targetName, targetData, phone, password);
+        const htmlRef = storage.ref(`experiences/${slug}/index.html`);
+        await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
+        const experienceUrl = await htmlRef.getDownloadURL();
+
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Done!';
+        setTimeout(() => showResult(experienceUrl, name), 500);
+      } catch (err) {
+        console.error(err);
+        progressText.textContent = 'Error: ' + err.message;
+        btn.disabled = false;
+      }
+    }
+
+    // ─── BUILD IMAGE AR EXPERIENCE ─────────────────────────────────
+    function buildImageArExperience(name, targetName, targetData, videoUrl) {
       const targetDataJSON = JSON.stringify(targetData);
-
       return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -347,58 +507,29 @@
   <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"><\/script>
   <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"><\/script>
   <style>
-    :root {
-      --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.6); --black: #000;
-      --white: #F5F5F5; --muted: rgba(245,245,245,0.5); --red: #EF4444;
-    }
+    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
-
-    /* Launch Screen */
     .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
     .screen.active { display:flex; }
-    #launch-screen::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:0.03; background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--gold) 2px,var(--gold) 3px); }
-    .launch-content { text-align:center; padding:0 24px; z-index:10; }
-    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); font-weight:600; letter-spacing:0.05em; text-transform:uppercase; }
+    .launch-content { text-align:center; padding:0 24px; }
+    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); }
     .launch-content .channel { font-family:'Oswald',sans-serif; font-size:14px; color:var(--gold); letter-spacing:0.3em; margin-top:8px; }
     .launch-content .instructions { font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto; }
-    .divider { width:64px; height:1px; background:var(--gold-dim); margin:24px auto; }
-    .xweb-btn { display:inline-flex; align-items:center; justify-content:center; padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; transition:all 0.3s; }
+    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }
+    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }
     .xweb-btn:hover { background:var(--gold); color:var(--black); }
-    .xweb-btn:active { transform:scale(0.95); }
-
-    /* Camera Screen */
     #camera-screen { background:var(--black); }
-    #ar-container { position:absolute; inset:0; z-index:0; }
-    #ar-container a-scene { position:absolute; top:0; left:0; width:100%; height:100%; }
-    .ar-overlay { position:absolute; inset:0; z-index:20; pointer-events:none; }
-    .ar-overlay header, .ar-overlay .tap-overlay button, .ar-overlay .back-btn { pointer-events:auto; }
+    #ar-container { position:absolute; inset:0; }
+    #ar-container a-scene { position:absolute; inset:0; }
     .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }
-    .back-btn { display:flex; align-items:center; gap:4px; background:none; border:none; color:var(--gold); font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; }
+    .back-btn { background:none; border:none; color:var(--gold); font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }
     .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }
-    .ar-footer p { font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); }
-    .status-dot { width:6px; height:6px; border-radius:50%; display:inline-block; animation:pulse 2s ease-in-out infinite; }
-    .status-dot.scanning { background:var(--gold); }
-    .status-dot.live { background:var(--red); }
-    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-
-    /* Viewfinder */
-    .viewfinder { position:absolute; inset:60px 16px 80px 16px; pointer-events:none; }
-    .vf-corner { position:absolute; width:24px; height:24px; border-color:var(--gold-dim); }
-    .vf-corner.tl { top:0; left:0; border-top:1px solid; border-left:1px solid; }
-    .vf-corner.tr { top:0; right:0; border-top:1px solid; border-right:1px solid; }
-    .vf-corner.bl { bottom:0; left:0; border-bottom:1px solid; border-left:1px solid; }
-    .vf-corner.br { bottom:0; right:0; border-bottom:1px solid; border-right:1px solid; }
-
-    /* Tap overlay */
-    .tap-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:25; pointer-events:auto; opacity:0; transition:opacity 0.3s; pointer-events:none; }
-    .tap-overlay.visible { opacity:1; pointer-events:auto; }
-
-    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; z-index:10; }
+    .ar-footer p { font-size:11px; color:var(--muted); }
+    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
   </style>
 </head>
 <body>
-  <!-- Launch Screen -->
   <div id="launch-screen" class="screen active">
     <div class="launch-content">
       <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
@@ -408,174 +539,214 @@
       <p class="instructions">Point your camera at the target image to begin the experience.</p>
       <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>
     </div>
-    <div class="powered-by">POWERED BY X-WEB.IO</div>
+    <div class="powered-by">POWERED BY X-WEB AR</div>
   </div>
-
-  <!-- Camera / AR Screen -->
   <div id="camera-screen" class="screen">
     <div id="ar-container"></div>
-    <div class="ar-overlay">
-      <header class="ar-header">
-        <button class="back-btn" onclick="exitCamera()">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-          EXIT
-        </button>
-        <span style="font-family:'Oswald',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.15em;">X-WEB</span>
-        <div id="ar-status" style="display:flex; align-items:center; gap:6px;">
-          <span class="status-dot scanning" id="status-dot"></span>
-          <span id="status-label" style="font-family:'Oswald',sans-serif; font-size:9px; color:var(--gold-dim); letter-spacing:0.1em;">SCANNING</span>
-        </div>
-      </header>
-      <div class="viewfinder" id="viewfinder">
-        <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
-        <div class="vf-corner bl"></div><div class="vf-corner br"></div>
-      </div>
-      <div class="tap-overlay" id="tap-overlay">
-        <button class="xweb-btn" onclick="playContent()">TAP TO PLAY</button>
-      </div>
-      <div class="ar-footer">
-        <p id="scan-hint">Point camera at target image</p>
-      </div>
-    </div>
+    <header class="ar-header">
+      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>
+      <span style="font-family:'Oswald',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>
+    </header>
+    <div class="ar-footer"><p id="scan-hint">Point camera at target image</p></div>
   </div>
-
   <script>
-    // ─── CONFIG ─────────────────────────────────────────────────
     const TARGET_DATA = ${targetDataJSON};
-    const VIDEO_URL = '${videoUrl}';
-    const TARGET_NAME = '${targetName}';
+    const TARGET_NAME = "${targetName}";
+    const VIDEO_URL = "${videoUrl}";
 
-    // ─── CAMERA LAUNCH ──────────────────────────────────────────
     function launchCamera() {
       document.getElementById('launch-screen').classList.remove('active');
       document.getElementById('camera-screen').classList.add('active');
       initAR();
     }
-
     function exitCamera() {
-      const scene = document.querySelector('a-scene');
-      if (scene) scene.remove();
-      document.querySelectorAll('video, audio').forEach(el => { el.pause(); el.currentTime = 0; });
       document.getElementById('camera-screen').classList.remove('active');
       document.getElementById('launch-screen').classList.add('active');
     }
-
-    // ─── AR INITIALIZATION ──────────────────────────────────────
     async function initAR() {
       try {
         await waitForXR8();
-        const XR8 = window.XR8;
-
-        // Configure with our image target data
-        XR8.XrController.configure({
-          imageTargetData: [TARGET_DATA],
-        });
-
-        // Create A-Frame scene
+        XR8.XrController.configure({ imageTargetData: [TARGET_DATA] });
         createScene();
-        setStatus('scanning');
       } catch(err) {
-        console.error('[X-WEB] AR init error:', err);
         document.getElementById('scan-hint').textContent = 'Error: ' + err.message;
       }
     }
-
     function waitForXR8() {
       return new Promise((resolve, reject) => {
         if (window.XR8) return resolve();
         window.addEventListener('xrloaded', () => resolve(), { once: true });
-        setTimeout(() => reject(new Error('8th Wall engine failed to load (15s timeout)')), 15000);
+        setTimeout(() => reject(new Error('X-WEB AR engine failed to load')), 15000);
       });
     }
-
-    // ─── SCENE CREATION ─────────────────────────────────────────
     function createScene() {
-      const container = document.getElementById('ar-container');
-      container.innerHTML = \`
-        <a-scene
-          xrextras-gesture-detector
-          xrextras-loading
-          xrextras-runtime-error
-          renderer="colorManagement:true"
-          xrweb="disableWorldTracking: true"
-          embedded
-        >
-          <a-assets>
-            <video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
-          </a-assets>
-          <a-camera position="0 4 10" raycaster="objects: .cantap" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
+      document.getElementById('ar-container').innerHTML = \`
+        <a-scene xrextras-gesture-detector xrextras-loading xrextras-runtime-error renderer="colorManagement:true" xrweb="disableWorldTracking:true" embedded>
+          <a-assets><video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video></a-assets>
+          <a-camera position="0 4 10" raycaster="objects:.cantap" cursor="fuse:false; rayOrigin:mouse;"></a-camera>
           <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
           <a-light type="ambient" intensity="1"></a-light>
           <xrextras-named-image-target name="\${TARGET_NAME}">
-            <a-entity
-              xrextras-play-video="video: #target-video; thumb: #target-video; canstop: true"
-              geometry="primitive: plane; width: 1; height: 0.5625;"
-            ></a-entity>
+            <a-entity xrextras-play-video="video:#target-video; thumb:#target-video; canstop:true" geometry="primitive:plane; width:1; height:0.5625;"></a-entity>
           </xrextras-named-image-target>
-        </a-scene>
-      \`;
-
-      // Listen for target events
-      const scene = container.querySelector('a-scene');
+        </a-scene>\`;
+      const scene = document.querySelector('a-scene');
       scene.addEventListener('loaded', () => {
-        const targetEl = document.querySelector('xrextras-named-image-target[name="' + TARGET_NAME + '"]');
-        if (!targetEl) return;
-
-        targetEl.addEventListener('xrimagefound', () => {
-          console.log('[X-WEB] Target found: ' + TARGET_NAME);
-          setStatus('detected');
-          document.getElementById('tap-overlay').classList.add('visible');
-        });
-
-        targetEl.addEventListener('xrimagelost', () => {
-          console.log('[X-WEB] Target lost: ' + TARGET_NAME);
-          setStatus('scanning');
-          document.getElementById('tap-overlay').classList.remove('visible');
-        });
+        const t = document.querySelector('xrextras-named-image-target[name="'+TARGET_NAME+'"]');
+        if(t) {
+          t.addEventListener('xrimagefound', () => { document.getElementById('scan-hint').textContent = 'Target detected — tap video to play'; });
+          t.addEventListener('xrimagelost', () => { document.getElementById('scan-hint').textContent = 'Point camera at target image'; });
+        }
       });
     }
-
-    // ─── PLAYBACK ───────────────────────────────────────────────
-    function playContent() {
-      const video = document.getElementById('target-video');
-      if (video) {
-        video.play().then(() => {
-          setStatus('live');
-          document.getElementById('tap-overlay').classList.remove('visible');
-        }).catch(err => console.error('[X-WEB] Play error:', err));
-      }
+  <\/script>
+</body>
+</html>`;
     }
 
-    // ─── STATUS ─────────────────────────────────────────────────
-    function setStatus(state) {
-      const dot = document.getElementById('status-dot');
-      const label = document.getElementById('status-label');
-      const viewfinder = document.getElementById('viewfinder');
-      const hint = document.getElementById('scan-hint');
-
-      dot.className = 'status-dot';
-      switch(state) {
-        case 'scanning':
-          dot.classList.add('scanning');
-          label.textContent = 'SCANNING';
-          viewfinder.style.opacity = '1';
-          hint.textContent = 'Point camera at target image';
-          break;
-        case 'detected':
-          dot.classList.add('scanning');
-          label.textContent = 'DETECTED';
-          label.style.color = 'var(--gold)';
-          viewfinder.style.opacity = '0';
-          hint.textContent = 'Target detected — tap to play';
-          break;
-        case 'live':
-          dot.classList.add('live');
-          label.textContent = 'LIVE';
-          label.style.color = 'var(--red)';
-          viewfinder.style.opacity = '0';
-          hint.textContent = '';
-          break;
+    // ─── BUILD GPS AR EXPERIENCE ───────────────────────────────────
+    function buildGpsArExperience(name, lat, lng, modelUrl) {
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>${name} — X-WEB AR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"><\/script>
+  <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"><\/script>
+  <script src="https://raw.githack.com/nicolo-ribaudo/tc39-proposal-await-using-from-async-disposablestack/main/AFrame/build/aframe-ar-nft.js"><\/script>
+  <style>
+    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
+    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
+    .screen.active { display:flex; }
+    .launch-content { text-align:center; padding:0 24px; }
+    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); }
+    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }
+    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }
+    .xweb-btn:hover { background:var(--gold); color:var(--black); }
+    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }
+    .back-btn { background:none; border:none; color:var(--gold); font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }
+    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }
+    .ar-footer p { font-size:11px; color:var(--muted); }
+    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
+  </style>
+</head>
+<body>
+  <div id="launch-screen" class="screen active">
+    <div class="launch-content">
+      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
+      <div class="divider"></div>
+      <h1>${name}</h1>
+      <div class="divider"></div>
+      <p style="font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto;">Walk to the GPS location to see the 3D model appear in your camera.</p>
+      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>
+    </div>
+    <div class="powered-by">POWERED BY X-WEB AR</div>
+  </div>
+  <div id="camera-screen" class="screen">
+    <a-scene vr-mode-ui="enabled:false" arjs="sourceType:webcam; videoTexture:true; debugUIEnabled:false;" renderer="antialias:true; alpha:true" embedded style="position:absolute; inset:0;">
+      <a-camera gps-new-camera="gpsMinDistance:5" look-controls-enabled="false" arjs-device-orientation-controls="smoothingFactor:0.1"></a-camera>
+      <a-entity gps-new-entity-place="latitude:${lat}; longitude:${lng}" gltf-model="${modelUrl}" scale="2 2 2" animation="property:rotation; to:0 360 0; loop:true; dur:10000; easing:linear"></a-entity>
+    </a-scene>
+    <header class="ar-header">
+      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>
+      <span style="font-family:'Oswald',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>
+    </header>
+    <div class="ar-footer"><p id="gps-hint">Locating GPS position...</p></div>
+  </div>
+  <script>
+    function launchCamera() {
+      document.getElementById('launch-screen').classList.remove('active');
+      document.getElementById('camera-screen').classList.add('active');
+      if(navigator.geolocation) {
+        navigator.geolocation.watchPosition(pos => {
+          document.getElementById('gps-hint').textContent = 'GPS active — look around to find the model';
+        }, err => {
+          document.getElementById('gps-hint').textContent = 'GPS error: ' + err.message;
+        }, { enableHighAccuracy:true });
       }
+    }
+    function exitCamera() {
+      document.getElementById('camera-screen').classList.remove('active');
+      document.getElementById('launch-screen').classList.add('active');
+    }
+  <\/script>
+</body>
+</html>`;
+    }
+
+    // ─── BUILD COMMS AR EXPERIENCE ─────────────────────────────────
+    function buildCommsArExperience(name, targetName, targetData, phone, password) {
+      const targetDataJSON = JSON.stringify(targetData);
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>${name} — X-WEB AR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); --green:#22C55E; --red:#EF4444; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
+    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
+    .screen.active { display:flex; }
+    .launch-content { text-align:center; padding:0 24px; }
+    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(24px,6vw,36px); }
+    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }
+    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }
+    .field-inline { margin:16px auto; max-width:240px; }
+    .field-inline input { width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(201,168,76,0.3); color:var(--white); font-size:14px; text-align:center; border-radius:4px; }
+    .call-btn { padding:18px 48px; border:none; border-radius:50px; background:var(--green); color:white; font-family:'Oswald',sans-serif; font-size:18px; letter-spacing:0.1em; cursor:pointer; margin-top:24px; }
+    .call-btn:hover { background:#16a34a; }
+    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
+    .error-msg { color:var(--red); font-size:12px; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div id="password-screen" class="screen active">
+    <div class="launch-content">
+      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
+      <div class="divider"></div>
+      <h1>${name}</h1>
+      <div class="divider"></div>
+      <p style="font-size:13px; color:var(--muted);">Enter access code to continue</p>
+      <div class="field-inline">
+        <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+      </div>
+      <button class="xweb-btn" onclick="checkPassword()">ENTER</button>
+      <p class="error-msg" id="pw-error"></p>
+    </div>
+    <div class="powered-by">POWERED BY X-WEB AR</div>
+  </div>
+  <div id="call-screen" class="screen">
+    <div class="launch-content">
+      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB COMMS</p>
+      <div class="divider"></div>
+      <h1>${name}</h1>
+      <div class="divider"></div>
+      <p style="font-size:14px; color:var(--muted); margin:16px 0;">Tap to connect</p>
+      <button class="call-btn" onclick="makeCall()">&#x1F4DE; CALL</button>
+    </div>
+    <div class="powered-by">POWERED BY X-WEB AR</div>
+  </div>
+  <script>
+    const CORRECT_PASSWORD = "${password}";
+    const PHONE_NUMBER = "${phone}";
+    function checkPassword() {
+      const input = document.getElementById('pw-input').value;
+      if (input === CORRECT_PASSWORD) {
+        document.getElementById('password-screen').classList.remove('active');
+        document.getElementById('call-screen').classList.add('active');
+      } else {
+        document.getElementById('pw-error').textContent = 'Incorrect password';
+      }
+    }
+    function makeCall() {
+      window.location.href = 'tel:' + PHONE_NUMBER;
     }
   <\/script>
 </body>
@@ -583,9 +754,8 @@
     }
 
     // ─── RESULT DISPLAY ────────────────────────────────────────────
-
     function showResult(url, name) {
-      document.getElementById('create-card').style.display = 'none';
+      document.querySelectorAll('.maker-card').forEach(c => c.classList.remove('active'));
       const resultCard = document.getElementById('result-card');
       resultCard.classList.add('active');
 
@@ -593,10 +763,9 @@
       resultUrl.href = url;
       resultUrl.textContent = name + ' — AR Experience (tap to open)';
 
-      // Generate QR code using qrcode-generator library
+      // Generate QR code using qrcode-generator
       const qrContainer = document.getElementById('qr-container');
       qrContainer.innerHTML = '';
-      
       try {
         const qr = qrcode(0, 'L');
         qr.addData(url);
@@ -614,25 +783,8 @@
         qrContainer.innerHTML = '<p style="color:#C9A84C;font-size:11px;padding:20px;word-break:break-all;">' + url + '</p>';
       }
 
-      // Also show copyable URL below QR
-      const urlText = document.createElement('p');
-      urlText.style.cssText = 'font-size:10px; color:#999; margin-top:12px; word-break:break-all; max-width:280px;';
-      urlText.textContent = url;
-      qrContainer.parentElement.insertBefore(urlText, qrContainer.nextSibling);
-    }
-
-    function resetForm() {
-      imageFile = null;
-      videoFile = null;
-      document.getElementById('create-card').style.display = 'block';
-      document.getElementById('result-card').classList.remove('active');
-      document.getElementById('filename-image').textContent = '';
-      document.getElementById('filename-video').textContent = '';
-      document.getElementById('zone-image').classList.remove('has-file');
-      document.getElementById('zone-video').classList.remove('has-file');
-      document.getElementById('btn-create').disabled = true;
-      document.getElementById('progress').classList.remove('active');
-      document.getElementById('exp-name').value = '';
+      // Show URL text
+      document.getElementById('result-url-text').textContent = url;
     }
 
     function getExt(filename) {
