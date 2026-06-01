@@ -77,6 +77,19 @@
       ]
     },
     {
+      "site": "rockcam",
+      "public": "rockcam",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "Permissions-Policy", "value": "camera=(self)" }
+          ]
+        }
+      ]
+    },
+    {
       "site": "xweb-image-maker",
       "public": "standalone-image-maker",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
