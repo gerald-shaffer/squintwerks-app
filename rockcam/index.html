@@ -21,6 +21,7 @@
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       background:var(--black);
     }
+    #launch-screen.hidden { display:none; }
     .scan-line { position:absolute; top:0; left:0; width:100%; height:2px; background:var(--gold); opacity:0.1; animation:scan 4s linear infinite; }
     @keyframes scan { 0%{transform:translateY(0)} 100%{transform:translateY(100vh)} }
 
@@ -65,12 +66,7 @@
     .ar-status.scanning { color:var(--gold); border-color:var(--gold-dim); }
     .ar-status.detected { color:var(--green); border-color:var(--green); }
 
-    .ar-corners { position:absolute; inset:40px; pointer-events:none; }
-    .ar-corners::before, .ar-corners::after { content:''; position:absolute; width:20px; height:20px; border-color:var(--gold); border-style:solid; opacity:0.4; }
-    .ar-corners::before { top:0; left:0; border-width:1px 0 0 1px; }
-    .ar-corners::after { bottom:0; right:0; border-width:0 1px 1px 0; }
-
-    .tap-prompt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:auto; display:none; }
+    .tap-prompt { position:absolute; inset:0; display:none; align-items:center; justify-content:center; pointer-events:auto; }
     .tap-prompt.show { display:flex; }
     .tap-prompt button { padding:16px 32px; background:rgba(0,0,0,0.8); border:2px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; cursor:pointer; animation:pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
@@ -123,7 +119,6 @@
       <button class="btn-exit" onclick="exitAR()">&#8592; EXIT</button>
       <div class="ar-status scanning" id="ar-status">SCANNING</div>
     </div>
-    <div class="ar-corners"></div>
     <div class="tap-prompt" id="tap-prompt">
       <button onclick="playVideo()">&#9654; TAP TO PLAY</button>
     </div>
@@ -164,18 +159,23 @@ const TARGET_DATA = {
 };
 
 const VIDEO_URL = "https://storage.googleapis.com/x-web-ar-platform.firebasestorage.app/xweb-rockcam/rock5-video.mp4";
-const TARGET_IMAGE_URL = "https://storage.googleapis.com/x-web-ar-platform.firebasestorage.app/xweb-rockcam/rock5-target.png";
+const THUMB_URL = "https://storage.googleapis.com/x-web-ar-platform.firebasestorage.app/xweb-rockcam/rock5-target.png";
 
 // ─── SCRIPT LOADER ───
-function loadScript(src, attrs = {}) {
+function loadScript(src, attrs) {
   return new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[src="${src}"]`);
+    const existing = document.querySelector('script[src="' + src + '"]');
     if (existing) { resolve(); return; }
     const s = document.createElement('script');
     s.src = src;
-    Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
+    if (attrs) {
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (k === 'crossOrigin') { s.crossOrigin = v; }
+        else { s.setAttribute(k, String(v)); }
+      });
+    }
     s.onload = resolve;
-    s.onerror = () => reject(new Error(`Failed to load: ${src}`));
+    s.onerror = () => reject(new Error('Failed to load: ' + src));
     document.head.appendChild(s);
   });
 }
@@ -206,6 +206,10 @@ async function startAR() {
         crossOrigin: 'anonymous'
       });
     }
+    // Load landing page helper (handles camera permission flow)
+    await loadScript('https://cdn.jsdelivr.net/npm/@8thwall/landing-page@1/dist/landing-page.js', {
+      crossOrigin: 'anonymous'
+    });
 
     // Wait for XR8 to be ready
     await new Promise((resolve, reject) => {
@@ -220,7 +224,7 @@ async function startAR() {
     });
 
     // Show AR screen
-    document.getElementById('launch-screen').style.display = 'none';
+    document.getElementById('launch-screen').classList.add('hidden');
     document.getElementById('ar-screen').classList.add('active');
 
     // Create A-Frame scene
@@ -257,13 +261,16 @@ function createScene() {
   container.innerHTML = `
     <a-scene
       xrextras-gesture-detector
+      landing-page
+      xrextras-loading
+      xrextras-runtime-error
       renderer="colorManagement:true"
       xrweb="disableWorldTracking: true"
       embedded
       style="position:absolute; top:0; left:0; width:100%; height:100%;"
     >
       <a-assets>
-        <img id="rock5-thumb" src="${TARGET_IMAGE_URL}" crossorigin="anonymous">
+        <img id="rock5-thumb" src="${THUMB_URL}" crossorigin="anonymous">
         <video
           id="rock5-video"
           crossorigin="anonymous"
@@ -307,7 +314,7 @@ function exitAR() {
   if (scene) scene.parentNode.removeChild(scene);
   // Show launch screen
   document.getElementById('ar-screen').classList.remove('active');
-  document.getElementById('launch-screen').style.display = 'flex';
+  document.getElementById('launch-screen').classList.remove('hidden');
   // Reset button
   const btn = document.getElementById('btn-launch');
   btn.textContent = 'OPEN CAMERA';
