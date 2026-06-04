@@ -77,6 +77,15 @@
     #error-screen h2 { font-family:'Oswald',sans-serif; color:var(--red); font-size:18px; margin-bottom:12px; }
     #error-screen p { font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.6; }
     #error-screen button { padding:10px 24px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:0.15em; background:none; cursor:pointer; }
+
+    /* ─── OVERRIDE 8TH WALL BRANDING ─── */
+    /* Hide any 8th Wall powered-by text */
+    .poweredby-img, .prompt-box-8w .poweredby-img, [class*="8w"] .poweredby-img { display:none !important; }
+    /* Override loading screen branding */
+    .loading-overlay .loading-logo, .xrextras-loading .loading-logo { display:none !important; }
+    /* Override landing page branding */
+    .landing-page-background, .prompt-box-8w { background:var(--black) !important; }
+    .prompt-box-8w .prompt-button-8w { background:var(--gold) !important; color:var(--black) !important; border-radius:0 !important; font-family:'Oswald',sans-serif !important; letter-spacing:0.1em !important; }
   </style>
 </head>
 <body>
@@ -303,6 +312,29 @@ function playVideo() {
     document.getElementById('tap-prompt').classList.remove('show');
   }
 }
+
+// ─── REBRAND 8TH WALL UI ───
+function rebrand8thWall() {
+  const observer = new MutationObserver(() => {
+    // Replace any "Powered by 8th Wall" or "8th Wall" text
+    document.querySelectorAll('*').forEach(el => {
+      if (el.children.length === 0 && el.textContent) {
+        if (el.textContent.includes('8th Wall') || el.textContent.includes('8thwall')) {
+          el.textContent = el.textContent.replace(/8th Wall|8thwall/gi, 'X-WEB');
+        }
+        if (el.textContent.includes('Powered by')) {
+          el.textContent = el.textContent.replace(/Powered by.*/i, 'Powered by X-WEB');
+        }
+      }
+    });
+    // Hide any 8th Wall logo images
+    document.querySelectorAll('img[src*="8thwall"], img[src*="8th-wall"], .poweredby-img').forEach(img => {
+      img.style.display = 'none';
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+rebrand8thWall();
 
 // ─── EXIT AR ───
 function exitAR() {
