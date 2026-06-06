@@ -606,7 +606,7 @@
     function buildScene(planeW, planeH) {
       document.getElementById('ar-container').innerHTML = \`
         <a-scene xrextras-gesture-detector xrextras-loading xrextras-runtime-error renderer="colorManagement:true" xrweb="disableWorldTracking:true" embedded>
-          <a-assets><video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" muted crossorigin="anonymous" playsinline webkit-playsinline></video></a-assets>
+          <a-assets><video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video></a-assets>
           <a-camera position="0 4 10" raycaster="objects:.cantap" cursor="fuse:false; rayOrigin:mouse;"></a-camera>
           <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
           <a-light type="ambient" intensity="1"></a-light>
@@ -620,9 +620,6 @@
         if(t) {
           t.addEventListener('xrimagefound', () => {
             document.getElementById('scan-hint').textContent = 'Target detected \u2014 tap video to play';
-            // iOS fix: attempt to play video on detection
-            const v = document.getElementById('target-video');
-            if(v) { v.play().then(() => { v.muted = false; }).catch(()=>{}); }
           });
           t.addEventListener('xrimagelost', () => { document.getElementById('scan-hint').textContent = 'Point camera at target image'; });
         }
