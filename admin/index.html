@@ -527,6 +527,9 @@
     .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }
     .ar-footer p { font-size:11px; color:var(--muted); }
     .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
+    /* Override 8th Wall branding */
+    [class*="powered-by-8thwall"], [class*="poweredby"], .xr8-powered-by { display:none !important; }
+    img[src*="8thwall"], img[src*="8th-wall"] { display:none !important; }
   </style>
 </head>
 <body>
@@ -603,7 +606,7 @@
     function buildScene(planeW, planeH) {
       document.getElementById('ar-container').innerHTML = \`
         <a-scene xrextras-gesture-detector xrextras-loading xrextras-runtime-error renderer="colorManagement:true" xrweb="disableWorldTracking:true" embedded>
-          <a-assets><video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video></a-assets>
+          <a-assets><video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" muted crossorigin="anonymous" playsinline webkit-playsinline></video></a-assets>
           <a-camera position="0 4 10" raycaster="objects:.cantap" cursor="fuse:false; rayOrigin:mouse;"></a-camera>
           <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
           <a-light type="ambient" intensity="1"></a-light>
@@ -615,10 +618,24 @@
       scene.addEventListener('loaded', () => {
         const t = document.querySelector('xrextras-named-image-target[name="'+TARGET_NAME+'"]");
         if(t) {
-          t.addEventListener('xrimagefound', () => { document.getElementById('scan-hint').textContent = 'Target detected — tap video to play'; });
+          t.addEventListener('xrimagefound', () => {
+            document.getElementById('scan-hint').textContent = 'Target detected \u2014 tap video to play';
+            // iOS fix: attempt to play video on detection
+            const v = document.getElementById('target-video');
+            if(v) { v.play().then(() => { v.muted = false; }).catch(()=>{}); }
+          });
           t.addEventListener('xrimagelost', () => { document.getElementById('scan-hint').textContent = 'Point camera at target image'; });
         }
       });
+      // Override 8th Wall branding text
+      const observer = new MutationObserver(() => {
+        document.querySelectorAll('*').forEach(el => {
+          if(el.children.length === 0 && el.textContent && el.textContent.includes('8th Wall')) {
+            el.textContent = el.textContent.replace(/8th Wall/gi, 'X-WEB');
+          }
+        });
+      });
+      observer.observe(document.body, { childList:true, subtree:true });
     }
   <\/script>
 </body>
