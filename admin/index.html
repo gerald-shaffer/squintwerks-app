@@ -616,7 +616,7 @@
         </a-scene>\`;
       const scene = document.querySelector('a-scene');
       scene.addEventListener('loaded', () => {
-        const t = document.querySelector('xrextras-named-image-target[name="'+TARGET_NAME+'"]");
+        const t = document.querySelector('xrextras-named-image-target[name="'+TARGET_NAME+'"]');
         if(t) {
           t.addEventListener('xrimagefound', () => {
             document.getElementById('scan-hint').textContent = 'Target detected \u2014 tap video to play';
