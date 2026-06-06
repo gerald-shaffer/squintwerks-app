@@ -22,10 +22,11 @@
     .brand { text-align:center; margin-bottom:40px; }
     .brand h1 { font-family:'Oswald',sans-serif; font-size:36px; color:var(--gold); letter-spacing:0.15em; }
     .brand p { font-size:12px; color:var(--muted); letter-spacing:0.2em; margin-top:4px; }
+    .brand .tagline { font-family:'Oswald',sans-serif; font-size:11px; color:rgba(201,168,76,0.6); letter-spacing:0.25em; margin-top:8px; }
 
     .panel { width:100%; max-width:600px; }
 
-    /* ─── INTRO SCREEN ─── */
+    /* INTRO SCREEN */
     .intro-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:48px 32px; text-align:center; margin-bottom:24px; }
     .intro-card h2 { font-family:'Oswald',sans-serif; font-size:24px; color:var(--white); margin-bottom:8px; letter-spacing:0.05em; }
     .intro-card .subtitle { font-size:13px; color:var(--muted); margin-bottom:32px; line-height:1.6; }
@@ -42,7 +43,7 @@
     .btn-start:disabled { opacity:0.3; cursor:not-allowed; }
     .btn-start:disabled:hover { background:transparent; color:var(--gold); }
 
-    /* ─── MAKER SCREENS ─── */
+    /* MAKER SCREENS */
     .maker-card { display:none; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:32px; margin-bottom:24px; }
     .maker-card.active { display:block; }
     .maker-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--gold); margin-bottom:6px; letter-spacing:0.05em; }
@@ -75,7 +76,7 @@
     .btn-back { display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--muted); font-size:12px; cursor:pointer; margin-bottom:20px; padding:4px 0; }
     .btn-back:hover { color:var(--gold); }
 
-    /* ─── RESULT CARD ─── */
+    /* RESULT CARD */
     .result-card { display:none; background:var(--surface); border:1px solid var(--green); border-radius:8px; padding:32px; text-align:center; }
     .result-card.active { display:block; }
     .result-card h2 { font-family:'Oswald',sans-serif; font-size:20px; color:var(--green); margin-bottom:16px; }
@@ -89,12 +90,23 @@
     .btn-new:hover { border-color:var(--gold); color:var(--gold); }
 
     .powered-by { margin-top:48px; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; text-align:center; }
+
+    /* MULTI-TARGET */
+    .target-pair { background:var(--surface-2); border:1px solid var(--border); border-radius:6px; padding:20px; margin-bottom:16px; position:relative; }
+    .target-pair .pair-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .target-pair .pair-number { font-family:'Oswald',sans-serif; font-size:14px; color:var(--gold); letter-spacing:0.1em; }
+    .target-pair .btn-remove-pair { background:none; border:1px solid var(--red); color:var(--red); font-size:10px; padding:4px 10px; cursor:pointer; border-radius:3px; font-family:'Oswald',sans-serif; letter-spacing:0.1em; }
+    .target-pair .btn-remove-pair:hover { background:var(--red); color:var(--white); }
+    .btn-add-target { width:100%; padding:14px; background:transparent; border:2px dashed var(--border); color:var(--muted); font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.15em; cursor:pointer; border-radius:6px; margin-bottom:20px; transition:all 0.2s; }
+    .btn-add-target:hover { border-color:var(--gold-dim); color:var(--gold); background:var(--gold-bg); }
+    .target-count { font-size:11px; color:var(--muted); text-align:center; margin-bottom:16px; }
   </style>
 </head>
 <body>
   <div class="brand">
     <h1>X-WEB</h1>
     <p>PUBLISHER</p>
+    <p class="tagline">IT'S EVERYWHERE.</p>
   </div>
 
   <div class="panel">
@@ -108,6 +120,7 @@
         <select id="mode-select" onchange="updateStartBtn()">
           <option value="">— Choose —</option>
           <option value="image">IMAGE AR — Scan image, play video</option>
+          <option value="multi">MULTI-TARGET — Multiple images + videos, one URL</option>
           <option value="gps">GPS AR — Place 3D at location</option>
           <option value="comms">COMMS AR — Scan image, make call</option>
         </select>
@@ -115,12 +128,11 @@
       <button class="btn-start" id="btn-start" disabled onclick="startMaker()">BEGIN</button>
     </div>
 
-    <!-- IMAGE AR MAKER -->
+    <!-- IMAGE AR MAKER (single target) -->
     <div class="maker-card" id="maker-image">
       <button class="btn-back" onclick="goBack()">&#8592; Back</button>
       <h2>IMAGE AR PUBLISHER</h2>
       <p class="maker-desc">Upload a trigger image and a video. When someone scans the image, the video plays.</p>
-
       <div class="field">
         <label>Experience Name</label>
         <input type="text" id="img-name" placeholder="e.g., Sunshine Coast Golf Hole 1">
@@ -150,12 +162,30 @@
       </div>
     </div>
 
+    <!-- MULTI-TARGET AR MAKER -->
+    <div class="maker-card" id="maker-multi">
+      <button class="btn-back" onclick="goBack()">&#8592; Back</button>
+      <h2>MULTI-TARGET PUBLISHER</h2>
+      <p class="maker-desc">Create one AR experience with multiple trigger images. Each image plays its own video. Perfect for golf courses, museums, wine collections — up to 18 targets.</p>
+      <div class="field">
+        <label>Experience Name</label>
+        <input type="text" id="multi-name" placeholder="e.g., Sunshine Coast Golf Course" oninput="validateMultiForm()">
+      </div>
+      <div id="multi-targets-container"></div>
+      <button class="btn-add-target" id="btn-add-target" onclick="addTargetPair()">+ ADD TARGET</button>
+      <p class="target-count" id="multi-target-count">0 / 18 targets</p>
+      <button class="btn-create" id="btn-create-multi" onclick="createMultiTargetExperience()" disabled>CREATE MULTI-TARGET EXPERIENCE</button>
+      <div class="progress" id="progress-multi">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill-multi"></div></div>
+        <div class="progress-text" id="progress-text-multi">Uploading...</div>
+      </div>
+    </div>
+
     <!-- GPS AR MAKER -->
     <div class="maker-card" id="maker-gps">
       <button class="btn-back" onclick="goBack()">&#8592; Back</button>
       <h2>GPS AR PUBLISHER</h2>
       <p class="maker-desc">Place a 3D model at a real-world GPS location. When someone arrives, the model appears in their camera.</p>
-
       <div class="field">
         <label>Experience Name</label>
         <input type="text" id="gps-name" placeholder="e.g., Landyville — Camel Trophy 1981">
@@ -189,7 +219,6 @@
       <button class="btn-back" onclick="goBack()">&#8592; Back</button>
       <h2>COMMS AR PUBLISHER</h2>
       <p class="maker-desc">Scan an image to initiate a VoIP call. Password protected.</p>
-
       <div class="field">
         <label>Experience Name</label>
         <input type="text" id="comms-name" placeholder="e.g., Hotel Concierge Direct Line">
@@ -235,7 +264,7 @@
   <div class="powered-by">POWERED BY X-WEB.IO</div>
 
   <script>
-    // ─── FIREBASE CONFIG ───────────────────────────────────────────
+    // FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyAOGfjVMlHGnnKIcNMSCxgJGMnQ5xNOcgc",
       authDomain: "x-web-ar-platform.firebaseapp.com",
@@ -247,11 +276,13 @@
     firebase.initializeApp(firebaseConfig);
     const storage = firebase.storage();
 
-    // ─── STATE ─────────────────────────────────────────────────────
+    // STATE
     let currentMode = '';
     let files = {};
+    let multiTargets = [];
+    let multiPairCounter = 0;
 
-    // ─── NAVIGATION ────────────────────────────────────────────────
+    // NAVIGATION
     function updateStartBtn() {
       document.getElementById('btn-start').disabled = !document.getElementById('mode-select').value;
     }
@@ -261,6 +292,9 @@
       document.getElementById('intro-card').style.display = 'none';
       document.getElementById('result-card').classList.remove('active');
       document.getElementById('maker-' + currentMode).classList.add('active');
+      if (currentMode === 'multi' && multiTargets.length === 0) {
+        addTargetPair();
+      }
     }
 
     function goBack() {
@@ -268,14 +302,17 @@
       document.getElementById('result-card').classList.remove('active');
       document.getElementById('intro-card').style.display = 'block';
       files = {};
-      // Reset all forms
+      multiTargets = [];
+      multiPairCounter = 0;
+      document.getElementById('multi-targets-container').innerHTML = '';
+      updateMultiTargetCount();
       document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('has-file'));
       document.querySelectorAll('[id^="filename-"]').forEach(f => f.textContent = '');
       document.querySelectorAll('.btn-create').forEach(b => b.disabled = true);
       document.querySelectorAll('.progress').forEach(p => p.classList.remove('active'));
     }
 
-    // ─── FILE HANDLING ─────────────────────────────────────────────
+    // FILE HANDLING
     function handleFile(input, key) {
       const file = input.files[0];
       if (!file) return;
@@ -295,7 +332,6 @@
       }
     }
 
-    // Add input listeners for GPS and Comms fields
     document.addEventListener('DOMContentLoaded', () => {
       ['gps-lat', 'gps-lng', 'gps-name'].forEach(id => {
         const el = document.getElementById(id);
@@ -307,7 +343,60 @@
       });
     });
 
-    // ─── IMAGE TARGET GENERATION ───────────────────────────────────
+    // MULTI-TARGET UI
+    function addTargetPair() {
+      if (multiTargets.length >= 18) return;
+      multiPairCounter++;
+      const pairId = 'pair-' + multiPairCounter;
+      const pairNum = multiTargets.length + 1;
+      const pair = { id: pairId, imageFile: null, videoFile: null };
+      multiTargets.push(pair);
+
+      const container = document.getElementById('multi-targets-container');
+      const div = document.createElement('div');
+      div.className = 'target-pair';
+      div.id = pairId;
+      div.innerHTML = '<div class="pair-header"><span class="pair-number">TARGET ' + pairNum + '</span><button class="btn-remove-pair" onclick="removeTargetPair(\'' + pairId + '\')">REMOVE</button></div><div class="field"><label>Trigger Image</label><div class="upload-zone" id="zone-' + pairId + '-image"><div class="icon">&#x1F4F7;</div><div class="label">Drop image here or click to upload</div><div class="filename" id="filename-' + pairId + '-image"></div><input type="file" accept="image/*" onchange="handleMultiFile(this,\'' + pairId + '\',\'image\')"></div></div><div class="field"><label>Video</label><div class="upload-zone" id="zone-' + pairId + '-video"><div class="icon">&#x1F3AC;</div><div class="label">Drop MP4 here or click to upload</div><div class="filename" id="filename-' + pairId + '-video"></div><input type="file" accept="video/mp4,video/webm,video/*" onchange="handleMultiFile(this,\'' + pairId + '\',\'video\')"></div></div>';
+      container.appendChild(div);
+      updateMultiTargetCount();
+      validateMultiForm();
+    }
+
+    function removeTargetPair(pairId) {
+      multiTargets = multiTargets.filter(t => t.id !== pairId);
+      const el = document.getElementById(pairId);
+      if (el) el.remove();
+      const pairs = document.querySelectorAll('#multi-targets-container .target-pair');
+      pairs.forEach((p, i) => { p.querySelector('.pair-number').textContent = 'TARGET ' + (i + 1); });
+      updateMultiTargetCount();
+      validateMultiForm();
+    }
+
+    function handleMultiFile(input, pairId, type) {
+      const file = input.files[0];
+      if (!file) return;
+      const pair = multiTargets.find(t => t.id === pairId);
+      if (!pair) return;
+      if (type === 'image') pair.imageFile = file;
+      else pair.videoFile = file;
+      document.getElementById('filename-' + pairId + '-' + type).textContent = file.name;
+      document.getElementById('zone-' + pairId + '-' + type).classList.add('has-file');
+      validateMultiForm();
+    }
+
+    function updateMultiTargetCount() {
+      const count = multiTargets.length;
+      document.getElementById('multi-target-count').textContent = count + ' / 18 targets';
+      document.getElementById('btn-add-target').style.display = count >= 18 ? 'none' : 'block';
+    }
+
+    function validateMultiForm() {
+      const name = document.getElementById('multi-name').value.trim();
+      const allPairsComplete = multiTargets.length > 0 && multiTargets.every(t => t.imageFile && t.videoFile);
+      document.getElementById('btn-create-multi').disabled = !(name && allPairsComplete);
+    }
+
+    // IMAGE TARGET GENERATION
     const LUMINANCE_HEIGHT = 640;
 
     function generateImageTarget(imageFile, targetName) {
@@ -320,13 +409,11 @@
             const scale = LUMINANCE_HEIGHT / origH;
             const scaledW = Math.round(origW * scale);
             const scaledH = LUMINANCE_HEIGHT;
-
             const canvas = document.createElement('canvas');
             canvas.width = scaledW;
             canvas.height = scaledH;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, scaledW, scaledH);
-
             const imageData = ctx.getImageData(0, 0, scaledW, scaledH);
             const data = imageData.data;
             for (let i = 0; i < data.length; i += 4) {
@@ -334,13 +421,12 @@
               data[i] = data[i+1] = data[i+2] = gray;
             }
             ctx.putImageData(imageData, 0, 0);
-
             canvas.toBlob((luminanceBlob) => {
               const targetData = {
                 type: "PLANAR",
                 properties: { top: 0, left: 0, width: scaledW, height: scaledH, isRotated: false, originalWidth: origW, originalHeight: origH },
                 name: targetName,
-                resources: { luminanceImage: `${targetName}_luminance.png` },
+                resources: { luminanceImage: targetName + '_luminance.png' },
                 created: Date.now(),
                 updated: Date.now()
               };
@@ -353,50 +439,42 @@
       });
     }
 
-    // ─── CREATE IMAGE EXPERIENCE ───────────────────────────────────
+    // CREATE IMAGE EXPERIENCE (single target)
     async function createImageExperience() {
       const name = document.getElementById('img-name').value || 'untitled';
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'exp-' + Date.now();
       const targetName = slug.replace(/-/g, '_');
-
       const btn = document.getElementById('btn-create-image');
       const progress = document.getElementById('progress-image');
       const progressFill = document.getElementById('progress-fill-image');
       const progressText = document.getElementById('progress-text-image');
-
       btn.disabled = true;
       progress.classList.add('active');
-
       try {
         progressText.textContent = 'Generating image target...';
         progressFill.style.width = '10%';
         const { targetData, luminanceBlob } = await generateImageTarget(files['img-image'], targetName);
-
         progressText.textContent = 'Uploading luminance image...';
         progressFill.style.width = '25%';
-        const lumRef = storage.ref(`experiences/${slug}/image-targets/${targetName}_luminance.png`);
+        const lumRef = storage.ref('experiences/' + slug + '/image-targets/' + targetName + '_luminance.png');
         await lumRef.put(luminanceBlob);
         const luminanceUrl = await lumRef.getDownloadURL();
         targetData.imagePath = luminanceUrl;
-
         progressText.textContent = 'Uploading trigger image...';
         progressFill.style.width = '40%';
-        const imgRef = storage.ref(`experiences/${slug}/trigger${getExt(files['img-image'].name)}`);
+        const imgRef = storage.ref('experiences/' + slug + '/trigger' + getExt(files['img-image'].name));
         await imgRef.put(files['img-image']);
-
         progressText.textContent = 'Uploading video...';
         progressFill.style.width = '60%';
-        const vidRef = storage.ref(`experiences/${slug}/video${getExt(files['img-video'].name)}`);
+        const vidRef = storage.ref('experiences/' + slug + '/video' + getExt(files['img-video'].name));
         await vidRef.put(files['img-video']);
         const videoUrl = await vidRef.getDownloadURL();
-
         progressText.textContent = 'Building AR experience...';
         progressFill.style.width = '80%';
         const arHtml = buildImageArExperience(name, targetName, targetData, videoUrl);
-        const htmlRef = storage.ref(`experiences/${slug}/index.html`);
+        const htmlRef = storage.ref('experiences/' + slug + '/index.html');
         await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
         const experienceUrl = await htmlRef.getDownloadURL();
-
         progressFill.style.width = '100%';
         progressText.textContent = 'Done!';
         setTimeout(() => showResult(experienceUrl, name), 500);
@@ -407,35 +485,83 @@
       }
     }
 
-    // ─── CREATE GPS EXPERIENCE ─────────────────────────────────────
+    // CREATE MULTI-TARGET EXPERIENCE
+    async function createMultiTargetExperience() {
+      const name = document.getElementById('multi-name').value || 'untitled-multi';
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'multi-' + Date.now();
+      const btn = document.getElementById('btn-create-multi');
+      const progress = document.getElementById('progress-multi');
+      const progressFill = document.getElementById('progress-fill-multi');
+      const progressText = document.getElementById('progress-text-multi');
+      btn.disabled = true;
+      progress.classList.add('active');
+      try {
+        const totalTargets = multiTargets.length;
+        const targetsData = [];
+        for (let i = 0; i < totalTargets; i++) {
+          const pair = multiTargets[i];
+          const targetName = slug.replace(/-/g, '_') + '_t' + (i + 1);
+          const pct = Math.round((i / totalTargets) * 80);
+          progressText.textContent = 'Target ' + (i+1) + '/' + totalTargets + ' — generating...';
+          progressFill.style.width = (pct + 5) + '%';
+          const { targetData, luminanceBlob } = await generateImageTarget(pair.imageFile, targetName);
+          progressText.textContent = 'Target ' + (i+1) + '/' + totalTargets + ' — uploading luminance...';
+          progressFill.style.width = (pct + 10) + '%';
+          const lumRef = storage.ref('experiences/' + slug + '/image-targets/' + targetName + '_luminance.png');
+          await lumRef.put(luminanceBlob);
+          const luminanceUrl = await lumRef.getDownloadURL();
+          targetData.imagePath = luminanceUrl;
+          progressText.textContent = 'Target ' + (i+1) + '/' + totalTargets + ' — uploading image...';
+          progressFill.style.width = (pct + 15) + '%';
+          const imgRef = storage.ref('experiences/' + slug + '/trigger_' + (i+1) + getExt(pair.imageFile.name));
+          await imgRef.put(pair.imageFile);
+          progressText.textContent = 'Target ' + (i+1) + '/' + totalTargets + ' — uploading video...';
+          progressFill.style.width = (pct + 20) + '%';
+          const vidRef = storage.ref('experiences/' + slug + '/video_' + (i+1) + getExt(pair.videoFile.name));
+          await vidRef.put(pair.videoFile);
+          const videoUrl = await vidRef.getDownloadURL();
+          targetsData.push({ targetData: targetData, videoUrl: videoUrl, targetName: targetName });
+        }
+        progressText.textContent = 'Building multi-target AR experience...';
+        progressFill.style.width = '85%';
+        const arHtml = buildMultiTargetArExperience(name, targetsData);
+        const htmlRef = storage.ref('experiences/' + slug + '/index.html');
+        await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
+        const experienceUrl = await htmlRef.getDownloadURL();
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Done!';
+        setTimeout(() => showResult(experienceUrl, name), 500);
+      } catch (err) {
+        console.error(err);
+        progressText.textContent = 'Error: ' + err.message;
+        btn.disabled = false;
+      }
+    }
+
+    // CREATE GPS EXPERIENCE
     async function createGpsExperience() {
       const name = document.getElementById('gps-name').value || 'untitled-gps';
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'gps-' + Date.now();
       const lat = parseFloat(document.getElementById('gps-lat').value);
       const lng = parseFloat(document.getElementById('gps-lng').value);
-
       const btn = document.getElementById('btn-create-gps');
       const progress = document.getElementById('progress-gps');
       const progressFill = document.getElementById('progress-fill-gps');
       const progressText = document.getElementById('progress-text-gps');
-
       btn.disabled = true;
       progress.classList.add('active');
-
       try {
         progressText.textContent = 'Uploading 3D model...';
         progressFill.style.width = '30%';
-        const modelRef = storage.ref(`experiences/${slug}/model.glb`);
+        const modelRef = storage.ref('experiences/' + slug + '/model.glb');
         await modelRef.put(files['gps-model']);
         const modelUrl = await modelRef.getDownloadURL();
-
         progressText.textContent = 'Building GPS AR experience...';
         progressFill.style.width = '70%';
         const arHtml = buildGpsArExperience(name, lat, lng, modelUrl);
-        const htmlRef = storage.ref(`experiences/${slug}/index.html`);
+        const htmlRef = storage.ref('experiences/' + slug + '/index.html');
         await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
         const experienceUrl = await htmlRef.getDownloadURL();
-
         progressFill.style.width = '100%';
         progressText.textContent = 'Done!';
         setTimeout(() => showResult(experienceUrl, name), 500);
@@ -446,43 +572,37 @@
       }
     }
 
-    // ─── CREATE COMMS EXPERIENCE ───────────────────────────────────
+    // CREATE COMMS EXPERIENCE
     async function createCommsExperience() {
       const name = document.getElementById('comms-name').value || 'untitled-comms';
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'comms-' + Date.now();
       const phone = document.getElementById('comms-phone').value;
       const password = document.getElementById('comms-password').value || 'gerald';
-
       const btn = document.getElementById('btn-create-comms');
       const progress = document.getElementById('progress-comms');
       const progressFill = document.getElementById('progress-fill-comms');
       const progressText = document.getElementById('progress-text-comms');
-
       btn.disabled = true;
       progress.classList.add('active');
-
       try {
         progressText.textContent = 'Uploading trigger image...';
         progressFill.style.width = '30%';
-        const imgRef = storage.ref(`experiences/${slug}/trigger${getExt(files['comms-image'].name)}`);
+        const imgRef = storage.ref('experiences/' + slug + '/trigger' + getExt(files['comms-image'].name));
         await imgRef.put(files['comms-image']);
-
         progressText.textContent = 'Generating image target...';
         progressFill.style.width = '50%';
         const targetName = slug.replace(/-/g, '_');
         const { targetData, luminanceBlob } = await generateImageTarget(files['comms-image'], targetName);
-        const lumRef = storage.ref(`experiences/${slug}/image-targets/${targetName}_luminance.png`);
+        const lumRef = storage.ref('experiences/' + slug + '/image-targets/' + targetName + '_luminance.png');
         await lumRef.put(luminanceBlob);
         const luminanceUrl = await lumRef.getDownloadURL();
         targetData.imagePath = luminanceUrl;
-
         progressText.textContent = 'Building Comms AR experience...';
         progressFill.style.width = '80%';
         const arHtml = buildCommsArExperience(name, targetName, targetData, phone, password);
-        const htmlRef = storage.ref(`experiences/${slug}/index.html`);
+        const htmlRef = storage.ref('experiences/' + slug + '/index.html');
         await htmlRef.putString(arHtml, 'raw', { contentType: 'text/html' });
         const experienceUrl = await htmlRef.getDownloadURL();
-
         progressFill.style.width = '100%';
         progressText.textContent = 'Done!';
         setTimeout(() => showResult(experienceUrl, name), 500);
@@ -493,312 +613,47 @@
       }
     }
 
-    // ─── BUILD IMAGE AR EXPERIENCE ─────────────────────────────────
+    // BUILD IMAGE AR EXPERIENCE (single target)
     function buildImageArExperience(name, targetName, targetData, videoUrl) {
       const targetDataJSON = JSON.stringify(targetData);
-      return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>${name} — X-WEB AR</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"><\/script>
-  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"><\/script>
-  <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"><\/script>
-  <style>
-    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
-    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
-    .screen.active { display:flex; }
-    .launch-content { text-align:center; padding:0 24px; }
-    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); }
-    .launch-content .channel { font-family:'Oswald',sans-serif; font-size:14px; color:var(--gold); letter-spacing:0.3em; margin-top:8px; }
-    .launch-content .instructions { font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto; }
-    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }
-    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }
-    .xweb-btn:hover { background:var(--gold); color:var(--black); }
-    #camera-screen { background:var(--black); }
-    #ar-container { position:absolute; inset:0; }
-    #ar-container a-scene { position:absolute; inset:0; }
-    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }
-    .back-btn { background:none; border:none; color:var(--gold); font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }
-    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }
-    .ar-footer p { font-size:11px; color:var(--muted); }
-    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
-    /* Override 8th Wall branding */
-    [class*="powered-by-8thwall"], [class*="poweredby"], .xr8-powered-by { display:none !important; }
-    img[src*="8thwall"], img[src*="8th-wall"] { display:none !important; }
-  </style>
-</head>
-<body>
-  <div id="launch-screen" class="screen active">
-    <div class="launch-content">
-      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
-      <div class="divider"></div>
-      <h1>${name}</h1>
-      <div class="divider"></div>
-      <p class="instructions">Point your camera at the target image to begin the experience.</p>
-      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>
-    </div>
-    <div class="powered-by">POWERED BY X-WEB AR</div>
-  </div>
-  <div id="camera-screen" class="screen">
-    <div id="ar-container"></div>
-    <header class="ar-header">
-      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>
-      <span style="font-family:'Oswald',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>
-    </header>
-    <div class="ar-footer"><p id="scan-hint">Point camera at target image</p></div>
-  </div>
-  <script>
-    const TARGET_DATA = ${targetDataJSON};
-    const TARGET_NAME = "${targetName}";
-    const VIDEO_URL = "${videoUrl}";
-
-    function launchCamera() {
-      document.getElementById('launch-screen').classList.remove('active');
-      document.getElementById('camera-screen').classList.add('active');
-      initAR();
-    }
-    function exitCamera() {
-      document.getElementById('camera-screen').classList.remove('active');
-      document.getElementById('launch-screen').classList.add('active');
-    }
-    async function initAR() {
-      try {
-        await waitForXR8();
-        XR8.XrController.configure({ imageTargetData: [TARGET_DATA] });
-        createScene();
-      } catch(err) {
-        document.getElementById('scan-hint').textContent = 'Error: ' + err.message;
-      }
-    }
-    function waitForXR8() {
-      return new Promise((resolve, reject) => {
-        if (window.XR8) return resolve();
-        window.addEventListener('xrloaded', () => resolve(), { once: true });
-        setTimeout(() => reject(new Error('X-WEB AR engine failed to load')), 15000);
-      });
-    }
-    function createScene() {
-      // Detect video dimensions to set correct aspect ratio
-      const vid = document.createElement('video');
-      vid.src = VIDEO_URL;
-      vid.preload = 'metadata';
-      vid.addEventListener('loadedmetadata', () => {
-        const vw = vid.videoWidth || 1920;
-        const vh = vid.videoHeight || 1080;
-        const aspect = vw / vh;
-        // Scale so the largest dimension is 1 unit
-        const planeW = aspect >= 1 ? 1 : aspect;
-        const planeH = aspect >= 1 ? 1 / aspect : 1;
-        buildScene(planeW, planeH);
-      });
-      vid.addEventListener('error', () => {
-        // Fallback to 16:9 if metadata fails
-        buildScene(1.6, 0.9);
-      });
-      // Timeout fallback in case metadata never fires
-      setTimeout(() => { if (!document.querySelector('a-scene')) buildScene(1.6, 0.9); }, 5000);
-    }
-    function buildScene(planeW, planeH) {
-      document.getElementById('ar-container').innerHTML = \`
-        <a-scene xrextras-gesture-detector xrextras-loading xrextras-runtime-error renderer="colorManagement:true" xrweb="disableWorldTracking:true" embedded>
-          <a-assets><video id="target-video" src="\${VIDEO_URL}" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video></a-assets>
-          <a-camera position="0 4 10" raycaster="objects:.cantap" cursor="fuse:false; rayOrigin:mouse;"></a-camera>
-          <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
-          <a-light type="ambient" intensity="1"></a-light>
-          <xrextras-named-image-target name="\${TARGET_NAME}">
-            <a-entity xrextras-play-video="video:#target-video; thumb:#target-video; canstop:true" geometry="primitive:plane; width:\${planeW}; height:\${planeH};" position="0 0 0" material="shader:flat;"></a-entity>
-          </xrextras-named-image-target>
-        </a-scene>\`;
-      const scene = document.querySelector('a-scene');
-      scene.addEventListener('loaded', () => {
-        const t = document.querySelector('xrextras-named-image-target[name="'+TARGET_NAME+'"]');
-        if(t) {
-          t.addEventListener('xrimagefound', () => {
-            document.getElementById('scan-hint').textContent = 'Target detected \u2014 tap video to play';
-          });
-          t.addEventListener('xrimagelost', () => { document.getElementById('scan-hint').textContent = 'Point camera at target image'; });
-        }
-      });
-      // Override 8th Wall branding text
-      const observer = new MutationObserver(() => {
-        document.querySelectorAll('*').forEach(el => {
-          if(el.children.length === 0 && el.textContent && el.textContent.includes('8th Wall')) {
-            el.textContent = el.textContent.replace(/8th Wall/gi, 'X-WEB');
-          }
-        });
-      });
-      observer.observe(document.body, { childList:true, subtree:true });
-    }
-  <\/script>
-</body>
-</html>`;
+      return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">\n  <title>' + name + ' — X-WEB AR</title>\n  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">\n  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"><\/script>\n  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"><\/script>\n  <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"><\/script>\n  <style>\n    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }\n    * { margin:0; padding:0; box-sizing:border-box; }\n    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:\'Inter\',sans-serif; }\n    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }\n    .screen.active { display:flex; }\n    .launch-content { text-align:center; padding:0 24px; }\n    .launch-content h1 { font-family:\'Oswald\',sans-serif; font-size:clamp(28px,7vw,42px); }\n    .launch-content .instructions { font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto; }\n    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }\n    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }\n    .xweb-btn:hover { background:var(--gold); color:var(--black); }\n    #camera-screen { background:var(--black); }\n    #ar-container { position:absolute; inset:0; }\n    #ar-container a-scene { position:absolute; inset:0; }\n    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }\n    .back-btn { background:none; border:none; color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }\n    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }\n    .ar-footer p { font-size:11px; color:var(--muted); }\n    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:\'Oswald\',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }\n    [class*="powered-by-8thwall"], [class*="poweredby"], .xr8-powered-by { display:none !important; }\n    img[src*="8thwall"], img[src*="8th-wall"] { display:none !important; }\n  </style>\n</head>\n<body>\n  <div id="launch-screen" class="screen active">\n    <div class="launch-content">\n      <p style="font-family:\'Oswald\',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>\n      <div class="divider"></div>\n      <h1>' + name + '</h1>\n      <div class="divider"></div>\n      <p class="instructions">Point your camera at the target image to begin the experience.</p>\n      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>\n    </div>\n    <div class="powered-by">POWERED BY X-WEB AR</div>\n  </div>\n  <div id="camera-screen" class="screen">\n    <div id="ar-container"></div>\n    <header class="ar-header">\n      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>\n      <span style="font-family:\'Oswald\',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>\n    </header>\n    <div class="ar-footer"><p id="scan-hint">Point camera at target image</p></div>\n  </div>\n  <script>\n    var TARGET_DATA = ' + targetDataJSON + ';\n    var TARGET_NAME = "' + targetName + '";\n    var VIDEO_URL = "' + videoUrl + '";\n    function launchCamera() {\n      document.getElementById("launch-screen").classList.remove("active");\n      document.getElementById("camera-screen").classList.add("active");\n      initAR();\n    }\n    function exitCamera() {\n      document.getElementById("camera-screen").classList.remove("active");\n      document.getElementById("launch-screen").classList.add("active");\n    }\n    async function initAR() {\n      try {\n        await waitForXR8();\n        XR8.XrController.configure({ imageTargetData: [TARGET_DATA] });\n        createScene();\n      } catch(err) {\n        document.getElementById("scan-hint").textContent = "Error: " + err.message;\n      }\n    }\n    function waitForXR8() {\n      return new Promise(function(resolve, reject) {\n        if (window.XR8) return resolve();\n        window.addEventListener("xrloaded", function() { resolve(); }, { once: true });\n        setTimeout(function() { reject(new Error("X-WEB AR engine failed to load")); }, 15000);\n      });\n    }\n    function createScene() {\n      var vid = document.createElement("video");\n      vid.src = VIDEO_URL;\n      vid.preload = "metadata";\n      vid.addEventListener("loadedmetadata", function() {\n        var vw = vid.videoWidth || 1920;\n        var vh = vid.videoHeight || 1080;\n        var aspect = vw / vh;\n        var planeW = aspect >= 1 ? 1 : aspect;\n        var planeH = aspect >= 1 ? 1 / aspect : 1;\n        buildScene(planeW, planeH);\n      });\n      vid.addEventListener("error", function() { buildScene(1.6, 0.9); });\n      setTimeout(function() { if (!document.querySelector("a-scene")) buildScene(1.6, 0.9); }, 5000);\n    }\n    function buildScene(planeW, planeH) {\n      document.getElementById("ar-container").innerHTML = \'<a-scene xrextras-gesture-detector xrextras-loading xrextras-runtime-error renderer="colorManagement:true" xrweb="disableWorldTracking:true" embedded><a-assets><video id="target-video" src="\' + VIDEO_URL + \'" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video></a-assets><a-camera position="0 4 10" raycaster="objects:.cantap" cursor="fuse:false; rayOrigin:mouse;"></a-camera><a-light type="directional" intensity="0.5" position="1 1 1"></a-light><a-light type="ambient" intensity="1"></a-light><xrextras-named-image-target name="\' + TARGET_NAME + \'"><a-entity xrextras-play-video="video:#target-video; thumb:#target-video; canstop:true" geometry="primitive:plane; width:\' + planeW + \'; height:\' + planeH + \';" position="0 0 0" material="shader:flat;"></a-entity></xrextras-named-image-target></a-scene>\';\n      var scene = document.querySelector("a-scene");\n      scene.addEventListener("loaded", function() {\n        var videoEl = document.getElementById("target-video");\n        if (videoEl) { videoEl.addEventListener("play", function() { videoEl.muted = false; }, { once: true }); }\n        var t = document.querySelector(\'xrextras-named-image-target[name="\' + TARGET_NAME + \'"]\');\n        if(t) {\n          t.addEventListener("xrimagefound", function() { document.getElementById("scan-hint").textContent = "Target detected \\u2014 tap video to play"; });\n          t.addEventListener("xrimagelost", function() { document.getElementById("scan-hint").textContent = "Point camera at target image"; });\n        }\n      });\n      var observer = new MutationObserver(function() {\n        document.querySelectorAll("*").forEach(function(el) {\n          if(el.children.length === 0 && el.textContent && el.textContent.indexOf("8th Wall") !== -1) {\n            el.textContent = el.textContent.replace(/8th Wall/gi, "X-WEB");\n          }\n        });\n      });\n      observer.observe(document.body, { childList:true, subtree:true });\n    }\n  <\/script>\n</body>\n</html>';
     }
 
-    // ─── BUILD GPS AR EXPERIENCE ───────────────────────────────────
+    // BUILD MULTI-TARGET AR EXPERIENCE
+    function buildMultiTargetArExperience(name, targetsData) {
+      var allTargetDataJSON = JSON.stringify(targetsData.map(function(t) { return t.targetData; }));
+      var videoAssets = targetsData.map(function(t, i) {
+        return '<video id="video-' + i + '" src="' + t.videoUrl + '" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>';
+      }).join('');
+      var targetEntities = targetsData.map(function(t, i) {
+        return '<xrextras-named-image-target name="' + t.targetName + '"><a-entity xrextras-play-video="video:#video-' + i + '; thumb:#video-' + i + '; canstop:true" geometry="primitive:plane; width:1; height:0.5625;" position="0 0 0" material="shader:flat;" data-video-idx="' + i + '"></a-entity></xrextras-named-image-target>';
+      }).join('');
+      var videoDimCode = targetsData.map(function(t, i) {
+        return 'var v' + i + '=document.getElementById("video-' + i + '");if(v' + i + ')v' + i + '.addEventListener("loadedmetadata",function(){var a=(v' + i + '.videoWidth||1920)/(v' + i + '.videoHeight||1080);var pw=a>=1?1:a;var ph=a>=1?1/a:1;var ent=document.querySelector(\'xrextras-named-image-target[name="' + t.targetName + '"] a-entity\');if(ent)ent.setAttribute("geometry","primitive:plane; width:"+pw+"; height:"+ph);});';
+      }).join('');
+
+      return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">\n  <title>' + name + ' — X-WEB AR</title>\n  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">\n  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"><\/script>\n  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"><\/script>\n  <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"><\/script>\n  <style>\n    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }\n    * { margin:0; padding:0; box-sizing:border-box; }\n    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:\'Inter\',sans-serif; }\n    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }\n    .screen.active { display:flex; }\n    .launch-content { text-align:center; padding:0 24px; }\n    .launch-content h1 { font-family:\'Oswald\',sans-serif; font-size:clamp(28px,7vw,42px); }\n    .launch-content .instructions { font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto; }\n    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }\n    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }\n    .xweb-btn:hover { background:var(--gold); color:var(--black); }\n    #camera-screen { background:var(--black); }\n    #ar-container { position:absolute; inset:0; }\n    #ar-container a-scene { position:absolute; inset:0; }\n    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }\n    .back-btn { background:none; border:none; color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }\n    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }\n    .ar-footer p { font-size:11px; color:var(--muted); }\n    .target-counter { position:fixed; top:50px; right:16px; z-index:100; font-family:\'Oswald\',sans-serif; font-size:11px; color:var(--gold); letter-spacing:0.1em; background:rgba(0,0,0,0.6); padding:6px 12px; border-radius:4px; }\n    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:\'Oswald\',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }\n    [class*="powered-by-8thwall"], [class*="poweredby"], .xr8-powered-by { display:none !important; }\n    img[src*="8thwall"], img[src*="8th-wall"] { display:none !important; }\n  </style>\n</head>\n<body>\n  <div id="launch-screen" class="screen active">\n    <div class="launch-content">\n      <p style="font-family:\'Oswald\',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>\n      <div class="divider"></div>\n      <h1>' + name + '</h1>\n      <p style="font-family:\'Oswald\',sans-serif; font-size:12px; color:var(--muted); letter-spacing:0.1em; margin-top:8px;">' + targetsData.length + ' TARGETS</p>\n      <div class="divider"></div>\n      <p class="instructions">Point your camera at any target image to play its video. This experience contains ' + targetsData.length + ' scannable targets.</p>\n      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>\n    </div>\n    <div class="powered-by">POWERED BY X-WEB AR</div>\n  </div>\n  <div id="camera-screen" class="screen">\n    <div id="ar-container"></div>\n    <header class="ar-header">\n      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>\n      <span style="font-family:\'Oswald\',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>\n    </header>\n    <div class="target-counter">' + targetsData.length + ' TARGETS</div>\n    <div class="ar-footer"><p id="scan-hint">Point camera at any target image</p></div>\n  </div>\n  <script>\n    var ALL_TARGET_DATA = ' + allTargetDataJSON + ';\n    function launchCamera() {\n      document.getElementById("launch-screen").classList.remove("active");\n      document.getElementById("camera-screen").classList.add("active");\n      initAR();\n    }\n    function exitCamera() {\n      document.getElementById("camera-screen").classList.remove("active");\n      document.getElementById("launch-screen").classList.add("active");\n    }\n    async function initAR() {\n      try {\n        await waitForXR8();\n        XR8.XrController.configure({ imageTargetData: ALL_TARGET_DATA });\n        buildScene();\n      } catch(err) {\n        document.getElementById("scan-hint").textContent = "Error: " + err.message;\n      }\n    }\n    function waitForXR8() {\n      return new Promise(function(resolve, reject) {\n        if (window.XR8) return resolve();\n        window.addEventListener("xrloaded", function() { resolve(); }, { once: true });\n        setTimeout(function() { reject(new Error("X-WEB AR engine failed to load")); }, 15000);\n      });\n    }\n    function buildScene() {\n      document.getElementById("ar-container").innerHTML = \'<a-scene xrextras-gesture-detector xrextras-loading xrextras-runtime-error renderer="colorManagement:true" xrweb="disableWorldTracking:true" embedded><a-assets>' + videoAssets + '</a-assets><a-camera position="0 4 10" raycaster="objects:.cantap" cursor="fuse:false; rayOrigin:mouse;"></a-camera><a-light type="directional" intensity="0.5" position="1 1 1"></a-light><a-light type="ambient" intensity="1"></a-light>' + targetEntities + '</a-scene>\';\n      var scene = document.querySelector("a-scene");\n      scene.addEventListener("loaded", function() {\n        ' + videoDimCode + '\n        document.querySelectorAll("a-assets video").forEach(function(v) { v.addEventListener("play", function() { v.muted = false; }, { once: true }); });\n        var foundCount = 0;\n        document.querySelectorAll("xrextras-named-image-target").forEach(function(t) {\n          t.addEventListener("xrimagefound", function() { foundCount++; document.getElementById("scan-hint").textContent = "Target detected \\u2014 tap video to play"; });\n          t.addEventListener("xrimagelost", function() { foundCount = Math.max(0, foundCount-1); if(foundCount===0) document.getElementById("scan-hint").textContent = "Point camera at any target image"; });\n        });\n      });\n      var observer = new MutationObserver(function() {\n        document.querySelectorAll("*").forEach(function(el) {\n          if(el.children.length === 0 && el.textContent && el.textContent.indexOf("8th Wall") !== -1) {\n            el.textContent = el.textContent.replace(/8th Wall/gi, "X-WEB");\n          }\n        });\n      });\n      observer.observe(document.body, { childList:true, subtree:true });\n    }\n  <\/script>\n</body>\n</html>';
+    }
+
+    // BUILD GPS AR EXPERIENCE
     function buildGpsArExperience(name, lat, lng, modelUrl) {
-      return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>${name} — X-WEB AR</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"><\/script>
-  <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"><\/script>
-  <script src="https://raw.githack.com/nicolo-ribaudo/tc39-proposal-await-using-from-async-disposablestack/main/AFrame/build/aframe-ar-nft.js"><\/script>
-  <style>
-    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
-    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
-    .screen.active { display:flex; }
-    .launch-content { text-align:center; padding:0 24px; }
-    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); }
-    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }
-    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }
-    .xweb-btn:hover { background:var(--gold); color:var(--black); }
-    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }
-    .back-btn { background:none; border:none; color:var(--gold); font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }
-    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }
-    .ar-footer p { font-size:11px; color:var(--muted); }
-    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
-  </style>
-</head>
-<body>
-  <div id="launch-screen" class="screen active">
-    <div class="launch-content">
-      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
-      <div class="divider"></div>
-      <h1>${name}</h1>
-      <div class="divider"></div>
-      <p style="font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto;">Walk to the GPS location to see the 3D model appear in your camera.</p>
-      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>
-    </div>
-    <div class="powered-by">POWERED BY X-WEB AR</div>
-  </div>
-  <div id="camera-screen" class="screen">
-    <a-scene vr-mode-ui="enabled:false" arjs="sourceType:webcam; videoTexture:true; debugUIEnabled:false;" renderer="antialias:true; alpha:true" embedded style="position:absolute; inset:0;">
-      <a-camera gps-new-camera="gpsMinDistance:5" look-controls-enabled="false" arjs-device-orientation-controls="smoothingFactor:0.1"></a-camera>
-      <a-entity gps-new-entity-place="latitude:${lat}; longitude:${lng}" gltf-model="${modelUrl}" scale="2 2 2" animation="property:rotation; to:0 360 0; loop:true; dur:10000; easing:linear"></a-entity>
-    </a-scene>
-    <header class="ar-header">
-      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>
-      <span style="font-family:'Oswald',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>
-    </header>
-    <div class="ar-footer"><p id="gps-hint">Locating GPS position...</p></div>
-  </div>
-  <script>
-    function launchCamera() {
-      document.getElementById('launch-screen').classList.remove('active');
-      document.getElementById('camera-screen').classList.add('active');
-      if(navigator.geolocation) {
-        navigator.geolocation.watchPosition(pos => {
-          document.getElementById('gps-hint').textContent = 'GPS active — look around to find the model';
-        }, err => {
-          document.getElementById('gps-hint').textContent = 'GPS error: ' + err.message;
-        }, { enableHighAccuracy:true });
-      }
-    }
-    function exitCamera() {
-      document.getElementById('camera-screen').classList.remove('active');
-      document.getElementById('launch-screen').classList.add('active');
-    }
-  <\/script>
-</body>
-</html>`;
+      return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">\n  <title>' + name + ' — X-WEB AR</title>\n  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">\n  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"><\/script>\n  <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"><\/script>\n  <script src="https://raw.githack.com/nicolo-ribaudo/tc39-proposal-await-using-from-async-disposablestack/main/AFrame/build/aframe-ar-nft.js"><\/script>\n  <style>\n    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); }\n    * { margin:0; padding:0; box-sizing:border-box; }\n    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:\'Inter\',sans-serif; }\n    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }\n    .screen.active { display:flex; }\n    .launch-content { text-align:center; padding:0 24px; }\n    .launch-content h1 { font-family:\'Oswald\',sans-serif; font-size:clamp(28px,7vw,42px); }\n    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }\n    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }\n    .xweb-btn:hover { background:var(--gold); color:var(--black); }\n    .ar-header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent); }\n    .back-btn { background:none; border:none; color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:10px; letter-spacing:0.2em; cursor:pointer; }\n    .ar-footer { position:fixed; bottom:0; left:0; right:0; z-index:100; padding:16px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); text-align:center; }\n    .ar-footer p { font-size:11px; color:var(--muted); }\n    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:\'Oswald\',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }\n  </style>\n</head>\n<body>\n  <div id="launch-screen" class="screen active">\n    <div class="launch-content">\n      <p style="font-family:\'Oswald\',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>\n      <div class="divider"></div>\n      <h1>' + name + '</h1>\n      <div class="divider"></div>\n      <p style="font-size:14px; color:var(--muted); line-height:1.6; max-width:280px; margin:24px auto;">Walk to the GPS location to see the 3D model appear in your camera.</p>\n      <button class="xweb-btn" onclick="launchCamera()">OPEN CAMERA</button>\n    </div>\n    <div class="powered-by">POWERED BY X-WEB AR</div>\n  </div>\n  <div id="camera-screen" class="screen">\n    <a-scene vr-mode-ui="enabled:false" arjs="sourceType:webcam; videoTexture:true; debugUIEnabled:false;" renderer="antialias:true; alpha:true" embedded style="position:absolute; inset:0;">\n      <a-camera gps-new-camera="gpsMinDistance:5" look-controls-enabled="false" arjs-device-orientation-controls="smoothingFactor:0.1"></a-camera>\n      <a-entity gps-new-entity-place="latitude:' + lat + '; longitude:' + lng + '" gltf-model="' + modelUrl + '" scale="2 2 2" animation="property:rotation; to:0 360 0; loop:true; dur:10000; easing:linear"></a-entity>\n    </a-scene>\n    <header class="ar-header">\n      <button class="back-btn" onclick="exitCamera()">&#8592; EXIT</button>\n      <span style="font-family:\'Oswald\',sans-serif; font-size:10px; color:var(--gold); letter-spacing:0.2em;">X-WEB</span>\n    </header>\n    <div class="ar-footer"><p id="gps-hint">Locating GPS position...</p></div>\n  </div>\n  <script>\n    function launchCamera() {\n      document.getElementById("launch-screen").classList.remove("active");\n      document.getElementById("camera-screen").classList.add("active");\n      if(navigator.geolocation) {\n        navigator.geolocation.watchPosition(function(pos) {\n          document.getElementById("gps-hint").textContent = "GPS active — look around to find the model";\n        }, function(err) {\n          document.getElementById("gps-hint").textContent = "GPS error: " + err.message;\n        }, { enableHighAccuracy:true });\n      }\n    }\n    function exitCamera() {\n      document.getElementById("camera-screen").classList.remove("active");\n      document.getElementById("launch-screen").classList.add("active");\n    }\n  <\/script>\n</body>\n</html>';
     }
 
-    // ─── BUILD COMMS AR EXPERIENCE ─────────────────────────────────
+    // BUILD COMMS AR EXPERIENCE
     function buildCommsArExperience(name, targetName, targetData, phone, password) {
-      const targetDataJSON = JSON.stringify(targetData);
-      return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>${name} — X-WEB AR</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); --green:#22C55E; --red:#EF4444; }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:'Inter',sans-serif; }
-    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
-    .screen.active { display:flex; }
-    .launch-content { text-align:center; padding:0 24px; }
-    .launch-content h1 { font-family:'Oswald',sans-serif; font-size:clamp(24px,6vw,36px); }
-    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }
-    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }
-    .field-inline { margin:16px auto; max-width:240px; }
-    .field-inline input { width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(201,168,76,0.3); color:var(--white); font-size:14px; text-align:center; border-radius:4px; }
-    .call-btn { padding:18px 48px; border:none; border-radius:50px; background:var(--green); color:white; font-family:'Oswald',sans-serif; font-size:18px; letter-spacing:0.1em; cursor:pointer; margin-top:24px; }
-    .call-btn:hover { background:#16a34a; }
-    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:'Oswald',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }
-    .error-msg { color:var(--red); font-size:12px; margin-top:8px; }
-  </style>
-</head>
-<body>
-  <div id="password-screen" class="screen active">
-    <div class="launch-content">
-      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>
-      <div class="divider"></div>
-      <h1>${name}</h1>
-      <div class="divider"></div>
-      <p style="font-size:13px; color:var(--muted);">Enter access code to continue</p>
-      <div class="field-inline">
-        <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
-      </div>
-      <button class="xweb-btn" onclick="checkPassword()">ENTER</button>
-      <p class="error-msg" id="pw-error"></p>
-    </div>
-    <div class="powered-by">POWERED BY X-WEB AR</div>
-  </div>
-  <div id="call-screen" class="screen">
-    <div class="launch-content">
-      <p style="font-family:'Oswald',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB COMMS</p>
-      <div class="divider"></div>
-      <h1>${name}</h1>
-      <div class="divider"></div>
-      <p style="font-size:14px; color:var(--muted); margin:16px 0;">Tap to connect</p>
-      <button class="call-btn" onclick="makeCall()">&#x1F4DE; CALL</button>
-    </div>
-    <div class="powered-by">POWERED BY X-WEB AR</div>
-  </div>
-  <script>
-    const CORRECT_PASSWORD = "${password}";
-    const PHONE_NUMBER = "${phone}";
-    function checkPassword() {
-      const input = document.getElementById('pw-input').value;
-      if (input === CORRECT_PASSWORD) {
-        document.getElementById('password-screen').classList.remove('active');
-        document.getElementById('call-screen').classList.add('active');
-      } else {
-        document.getElementById('pw-error').textContent = 'Incorrect password';
-      }
-    }
-    function makeCall() {
-      window.location.href = 'tel:' + PHONE_NUMBER;
-    }
-  <\/script>
-</body>
-</html>`;
+      var targetDataJSON = JSON.stringify(targetData);
+      return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">\n  <title>' + name + ' — X-WEB AR</title>\n  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">\n  <style>\n    :root { --gold:#C9A84C; --black:#000; --white:#F5F5F5; --muted:rgba(245,245,245,0.5); --green:#22C55E; --red:#EF4444; }\n    * { margin:0; padding:0; box-sizing:border-box; }\n    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); color:var(--white); font-family:\'Inter\',sans-serif; }\n    .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }\n    .screen.active { display:flex; }\n    .launch-content { text-align:center; padding:0 24px; }\n    .launch-content h1 { font-family:\'Oswald\',sans-serif; font-size:clamp(24px,6vw,36px); }\n    .divider { width:64px; height:1px; background:rgba(201,168,76,0.4); margin:24px auto; }\n    .xweb-btn { padding:14px 36px; border:1px solid var(--gold); color:var(--gold); font-family:\'Oswald\',sans-serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; background:transparent; cursor:pointer; }\n    .field-inline { margin:16px auto; max-width:240px; }\n    .field-inline input { width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(201,168,76,0.3); color:var(--white); font-size:14px; text-align:center; border-radius:4px; }\n    .call-btn { padding:18px 48px; border:none; border-radius:50px; background:var(--green); color:white; font-family:\'Oswald\',sans-serif; font-size:18px; letter-spacing:0.1em; cursor:pointer; margin-top:24px; }\n    .call-btn:hover { background:#16a34a; }\n    .powered-by { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:\'Oswald\',sans-serif; font-size:9px; color:rgba(245,245,245,0.2); letter-spacing:0.15em; }\n    .error-msg { color:var(--red); font-size:12px; margin-top:8px; }\n  </style>\n</head>\n<body>\n  <div id="password-screen" class="screen active">\n    <div class="launch-content">\n      <p style="font-family:\'Oswald\',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB</p>\n      <div class="divider"></div>\n      <h1>' + name + '</h1>\n      <div class="divider"></div>\n      <p style="font-size:13px; color:var(--muted);">Enter access code to continue</p>\n      <div class="field-inline">\n        <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key===\'Enter\')checkPassword()">\n      </div>\n      <button class="xweb-btn" onclick="checkPassword()">ENTER</button>\n      <p class="error-msg" id="pw-error"></p>\n    </div>\n    <div class="powered-by">POWERED BY X-WEB AR</div>\n  </div>\n  <div id="call-screen" class="screen">\n    <div class="launch-content">\n      <p style="font-family:\'Oswald\',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.2em; margin-bottom:16px;">X-WEB COMMS</p>\n      <div class="divider"></div>\n      <h1>' + name + '</h1>\n      <div class="divider"></div>\n      <p style="font-size:14px; color:var(--muted); margin:16px 0;">Tap to connect</p>\n      <button class="call-btn" onclick="makeCall()">&#x1F4DE; CALL</button>\n    </div>\n    <div class="powered-by">POWERED BY X-WEB AR</div>\n  </div>\n  <script>\n    var CORRECT_PASSWORD = "' + password + '";\n    var PHONE_NUMBER = "' + phone + '";\n    function checkPassword() {\n      var input = document.getElementById("pw-input").value;\n      if (input === CORRECT_PASSWORD) {\n        document.getElementById("password-screen").classList.remove("active");\n        document.getElementById("call-screen").classList.add("active");\n      } else {\n        document.getElementById("pw-error").textContent = "Incorrect password";\n      }\n    }\n    function makeCall() {\n      window.location.href = "tel:" + PHONE_NUMBER;\n    }\n  <\/script>\n</body>\n</html>';
     }
 
-    // ─── RESULT DISPLAY ────────────────────────────────────────────
+    // RESULT DISPLAY
     function showResult(url, name) {
       document.querySelectorAll('.maker-card').forEach(c => c.classList.remove('active'));
       const resultCard = document.getElementById('result-card');
       resultCard.classList.add('active');
-
       const resultUrl = document.getElementById('result-url');
       resultUrl.href = url;
       resultUrl.textContent = name + ' — AR Experience (tap to open)';
-
-      // Generate QR code using qrcode-generator
       const qrContainer = document.getElementById('qr-container');
       qrContainer.innerHTML = '';
       try {
@@ -817,8 +672,6 @@
         console.error('QR exception:', e);
         qrContainer.innerHTML = '<p style="color:#C9A84C;font-size:11px;padding:20px;word-break:break-all;">' + url + '</p>';
       }
-
-      // Show URL text
       document.getElementById('result-url-text').textContent = url;
     }
 
