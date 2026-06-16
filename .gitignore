@@ -5,3 +5,6 @@ service-account.json
 *.log
 .env
 .env.local
+firebase-sa-key.json
+list_experiences.py
+inspect_experience.py
