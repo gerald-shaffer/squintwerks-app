@@ -9,6 +9,13 @@
       ],
       "headers": [
         {
+          "source": "xweb-player/v1/**",
+          "headers": [
+            { "key": "Permissions-Policy", "value": "camera=(self)" },
+            { "key": "Cache-Control", "value": "public, max-age=300" }
+          ]
+        },
+        {
           "source": "**/*.@(js|css)",
           "headers": [
             { "key": "Cache-Control", "value": "public, max-age=3600" }
